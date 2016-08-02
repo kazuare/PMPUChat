@@ -1,2 +1,2 @@
-Гайд по установке и запуску Tomcat:
+РЈСЃС‚Р°РЅРѕРІРєР° Рё РЅР°СЃС‚СЂРѕР№РєР° Tomcat:
 http://www.coreservlets.com/Apache-Tomcat-Tutorial/tomcat-7-with-eclipse.html#undefined
