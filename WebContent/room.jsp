@@ -21,20 +21,23 @@ $(document).ready(function(){
 function refresh(message_id){
 	$.ajax({
 	  type: "GET",
+	  //we got message_id from the previous refresh call
 	  url: 'Chat?refreshFrom='+message_id.toString(),
       timeout:1000*50,
 	  success: function( data ) {
 		charIndex=data.indexOf('#');
+		//this gets the actual number of messages at client and server side (these are equal at the moment)
 		lastId=parseInt(data.substring(0,charIndex));
 		data=data.substring(charIndex);
 		
 		if(lastId!=message_id)
 	  		$( '.chat' ).prepend(data);
 		
+		//set timeout to the next refresh call
 		setTimeout(function(lastId){
 			refresh(lastId);	
 			console.log("messages refresh");
-		}, 1000,lastId);},
+		}, 500,lastId);},
 	  error: function() {
 			console.log("refresh error");
 			refresh();	
@@ -42,6 +45,7 @@ function refresh(message_id){
 	
 	});
 }
+//starting with no messages at all, get all at first iteration, then ask for updates with recursion
 refresh(-1);
 });
 
@@ -51,6 +55,7 @@ $("#chatButton").click(function(){
 		  url: 'Chat?sendMessage='+$("#answer").val(),
 		  success: function( data ) {}
 		});
+	//clear the text field
 	$("#answer").val("");
 });
 </script>
