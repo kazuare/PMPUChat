@@ -28,7 +28,7 @@ function refresh(message_id){
 		charIndex=data.indexOf('#');
 		//this gets the actual number of messages at client and server side (these are equal at the moment)
 		lastId=parseInt(data.substring(0,charIndex));
-		data=data.substring(charIndex);
+		data=data.substring(charIndex+1);
 		
 		if(lastId!=message_id)
 	  		$( '.chat' ).prepend(data);
@@ -52,7 +52,8 @@ refresh(-1);
 $("#chatButton").click(function(){
 	$.ajax({
 		  type: "GET",
-		  url: 'Chat?sendMessage='+$("#answer").val(),
+		  url: 'Grader?sendMessage='+$("#answer").val(),
+		  //do nothing on success, updating is refresh()'s job
 		  success: function( data ) {}
 		});
 	//clear the text field
