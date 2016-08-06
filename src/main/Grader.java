@@ -21,9 +21,12 @@ public class Grader extends HttpServlet {
   } 
   
   @Override
-  public void doGet(HttpServletRequest request,
+  public void doPost(HttpServletRequest request,
                     HttpServletResponse response)
       throws ServletException, IOException {
+	//encoding stuff. must be written in the beginning of every servlet
+	request.setCharacterEncoding("UTF-8");
+	response.setCharacterEncoding("UTF-8");
 	
     String sendMessage = request.getParameter("sendMessage");
         

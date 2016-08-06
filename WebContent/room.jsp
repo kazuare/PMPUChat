@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+<%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -6,23 +6,69 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <script src='http://code.jquery.com/jquery-latest.min.js' type='text/javascript'></script>
 <title>room</title>
+<style>
+body {
+    background-color: #81E254;
+    width:100%;
+    overflow-x: hidden;
+}
+#main {
+    width:60%;
+    margin: auto;
+} 
+#bordered{
+    width:100%;
+    border-color: #81E254 #508e33 #508e33; 
+    border-style: solid;  
+    border-width: 1px;
+}
+#answerDiv{
+    width:100%;
+    text-align:right;
+} 
+#answer {
+    width:100%;
+    height:5em;
+    border: none;
+    padding:0;
+}  
+#chat {
+    width:100%;
+} 
+#chat div{
+    width:90%;
+    margin: 1em;
+    border-color: #508e33; 
+    border-style: solid;  
+    border-width: 1px;	
+}
+h1 {
+    text-align:center;
+} 
+</style>
 </head>
-<body bgcolor='#81E254'>
+<body>
+<div id='main'>
 <h1>PMPU MUSIC GUESSING GAME</h1>
 <audio src='/music/Free.mp3' controls ></audio>
-<p>MP3 test.</p>
-<form>
-<textarea id='answer' cols='40' rows='2'></textarea>
-<button type='button' id='chatButton'>submit</button> 
-</form>
-<div class='chat'></div>
+<div id='bordered'>
+<textarea id='answer'></textarea>
+<div id='answerDiv'>
+<button type='button' id='answerButton'>Отправить сообщение</button> 
+</div>
+<div id='chat'>
+<div>Начало чата.</div>
+</div>
+</div>
+</div>
 <script>
 $(document).ready(function(){
 function refresh(message_id){
 	$.ajax({
-	  type: "GET",
+	  type: "POST",
 	  //we got message_id from the previous refresh call
-	  url: 'Chat?refreshFrom='+message_id.toString(),
+	  url: 'Chat',//?refreshFrom='+message_id.toString(),
+	  data:{refreshFrom:message_id.toString()},
       timeout:1000*50,
 	  success: function( data ) {
 		charIndex=data.indexOf('#');
@@ -31,7 +77,7 @@ function refresh(message_id){
 		data=data.substring(charIndex+1);
 		
 		if(lastId!=message_id)
-	  		$( '.chat' ).prepend(data);
+	  		$( '#chat' ).prepend(data);
 		
 		//set timeout to the next refresh call
 		setTimeout(function(lastId){
@@ -49,10 +95,11 @@ function refresh(message_id){
 refresh(-1);
 });
 
-$("#chatButton").click(function(){
+$("#answerButton").click(function(){
 	$.ajax({
-		  type: "GET",
-		  url: 'Grader?sendMessage='+$("#answer").val(),
+		  type: "POST",
+		  url: 'Grader',//?sendMessage='+$("#answer").val(),
+		  data:{sendMessage:$("#answer").val()},
 		  //do nothing on success, updating is refresh()'s job
 		  success: function( data ) {}
 		});
