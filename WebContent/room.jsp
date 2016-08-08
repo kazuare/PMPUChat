@@ -18,6 +18,7 @@ body {
 } 
 #bordered{
     width:100%;
+    background-color:#9ae876;
     border-color: #81E254 #508e33 #508e33; 
     border-style: solid;  
     border-width: 1px;
@@ -57,27 +58,43 @@ h1 {
 <button type='button' id='answerButton'>Отправить сообщение</button> 
 </div>
 <div id='chat'>
-<div>Начало чата.</div>
+<div id='chatStart'>Начало чата.</div>
 </div>
 </div>
 </div>
 <script>
+//if changing chatlength, change the same property in Chat.java
+chatLength = 100;
+
+chatStartRemoved = false;
+
 $(document).ready(function(){
 function refresh(message_id){
 	$.ajax({
 	  type: "POST",
 	  //we got message_id from the previous refresh call
-	  url: 'Chat',//?refreshFrom='+message_id.toString(),
-	  data:{refreshFrom:message_id.toString()},
-      timeout:1000*50,
+	  url: 'Chat',
+	  data:{refreshFrom: message_id.toString()},
+      timeout:1000 * 50,
 	  success: function( data ) {
 		charIndex=data.indexOf('#');
 		//this gets the actual number of messages at client and server side (these are equal at the moment)
-		lastId=parseInt(data.substring(0,charIndex));
-		data=data.substring(charIndex+1);
+		lastId=parseInt(data.substring(0, charIndex));
+		data=data.substring(charIndex + 1);
 		
-		if(lastId!=message_id)
+		if(lastId != message_id)
 	  		$( '#chat' ).prepend(data);
+		
+		if($( ".msg" ).size() > chatLength)
+			for(var i = chatLength; i < $( ".msg" ).size();)
+				$( ".msg" ).toArray()[chatLength].remove();
+		
+		if(!chatStartRemoved)
+			if(chatLength <= lastId){
+				$( "#chatStart" ).remove();
+				chatStartRemoved = true;
+			}
+		
 		
 		//set timeout to the next refresh call
 		setTimeout(function(lastId){

@@ -1,11 +1,12 @@
 package main;
 
 import java.io.*;
-import java.util.Vector;
 
 import javax.servlet.*;
 import javax.servlet.annotation.*;
 import javax.servlet.http.*;
+
+import arrays.MagicStringArray;
 
 /** Simple servlet for testing. Generates HTML instead of plain
  *  text as with the HelloWorld servlet.
@@ -13,7 +14,7 @@ import javax.servlet.http.*;
 
 @WebServlet("/Chat")
 public class Chat extends HttpServlet {
-  private Vector<String> chat;
+  private MagicStringArray chat;
   private int lastAdded;
   public static boolean isPosInt(String str)
   {
@@ -27,8 +28,15 @@ public class Chat extends HttpServlet {
   @Override
   public void init(){
 	  //chat messages are contained here.
-	  //last added- index of the last message, -1 for empty chat.
-	  chat=new Vector<String>(100);
+	  //last added- index of the last message, -1 for the empty chat.
+	  
+	  //to change chat implementation back to vector (if it works ok, dont do it), 
+	  //change MagicStringArray to Vector and delete condition at chat printing
+	  
+	  //if changing chatlength, change the same property in room.jsp
+	  
+	  int chatLength=100;
+	  chat=new MagicStringArray(chatLength);
 	  lastAdded=-1;
   } 
   
@@ -59,13 +67,13 @@ public class Chat extends HttpServlet {
     			);
     	lastAdded++;
     	//adding index of the last message and the # separator
-    	out.print(lastAdded+"#");
-    }else if(refreshFrom!=null&&refreshFrom!=""){   
+    	out.print(lastAdded + "#");
+    }else if(refreshFrom != null && refreshFrom != ""){   
     	//serving messages between the most actual one on the server and the last message that client has acquired
     	//--not working for some reason,commented--if(isPosInt(refreshFrom)||refreshFrom.substring(0,2)=="-1"){
-    		out.print(lastAdded+"#");
-	    	for(int i=lastAdded;i>Integer.parseInt(refreshFrom);i--)
-	    		out.print("<div>"+chat.get(i)+"</div>");
+    		out.print(lastAdded + "#");
+	    	for(int i = lastAdded; i > Integer.parseInt(refreshFrom) && i >= chat.getFirstIndex(); i--)
+	    		out.print("<div class='msg'>" + chat.get(i) + "</div>");
 	    	out.close();
     	//}
     }
