@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ page session="true" %>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -43,6 +45,9 @@ body {
     border-style: solid;  
     border-width: 1px;	
 }
+#greeting {
+	
+}
 h1 {
     text-align:center;
 } 
@@ -50,7 +55,8 @@ h1 {
 </head>
 <body>
 <div id='main'>
-<h1>PMPU MUSIC GUESSING GAME</h1>
+<p id='greeting'><%= (session.getAttribute("username")!=null) ? "Hello, "+session.getAttribute("username") :
+	"Not logged in" %>.</p>
 <audio src='/music/Free.mp3' controls ></audio>
 <div id='bordered'>
 <textarea id='answer'></textarea>
@@ -111,11 +117,30 @@ function refresh(message_id){
 //starting with no messages at all, get all at first iteration, then ask for updates with recursion
 refresh(-1);
 });
+<%= (session.getAttribute("username")!=null) ? "" :	
+	"var name;"+
+	"serverAnswer='0';"+
+	" serverAnswer=$.ajax({"+
+		"type: 'POST',"+
+		"url: 'Autorizator',"+
+		" async:false, "+
+		"success: function(){$('#greeting').text('Hello, ' + name)},"+
+		"data:{username:name=prompt('Enter your username:')}"+
+	"}).responseText;"+
+	"while(serverAnswer!='1')" +
+	"serverAnswer=$.ajax({"+
+		"type: 'POST',"+
+		"url: 'Autorizator',"+
+		"async:false, "+
+		"success: function(){$('#greeting').text('Hello, ' + name)},"+
+		"data:{username:name=prompt('This username is invalid or is already taken, \\n please choose another one:')}"+
+	"}).responseText;"
+		%>
 
 $("#answerButton").click(function(){
 	$.ajax({
 		  type: "POST",
-		  url: 'Grader',//?sendMessage='+$("#answer").val(),
+		  url: 'Chat',
 		  data:{sendMessage:$("#answer").val()},
 		  //do nothing on success, updating is refresh()'s job
 		  success: function( data ) {}

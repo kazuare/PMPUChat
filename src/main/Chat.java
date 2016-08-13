@@ -61,8 +61,11 @@ public class Chat extends HttpServlet {
     //id of the last message on server # new messages for the client (we know what messages client already has
     // with the help of refreshFrom param)
     
+    HttpSession session = request.getSession(true);
+    String username=session.getAttribute("username").toString();
+    
     if(sendMessage!=null){
-    	chat.add("Анонимус:<br>"+TextCleaner.filter(
+    	chat.add(username+":<br>"+TextCleaner.filter(
     			sendMessage.substring(0,Math.min(1000,sendMessage.length())))+"<br>"
     			);
     	lastAdded++;
