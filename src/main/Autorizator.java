@@ -14,7 +14,7 @@ import arrays.MagicStringArray;
  */
 
 @WebServlet("/Autorizator")
-public class Autorizator extends HttpServlet {
+public class Autorizator extends HttpServlet  {
   @Override
   public void init(){
 	  getServletContext().setAttribute("users", new Vector<String>(128));

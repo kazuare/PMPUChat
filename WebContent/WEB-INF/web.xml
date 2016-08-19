@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app>
+  <listener>
+		<listener-class>main.SessionListener</listener-class>
+  </listener>
+
+</web-app>
