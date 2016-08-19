@@ -1,6 +1,8 @@
 package main;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.servlet.*;
 import javax.servlet.annotation.*;
@@ -65,8 +67,11 @@ public class Chat extends HttpServlet {
     String username=session.getAttribute("username").toString();
     
     if(sendMessage!=null){
-    	chat.add(username+":<br>"+TextCleaner.filter(
-    			sendMessage.substring(0,Math.min(1000,sendMessage.length())))+"<br>"
+    	SimpleDateFormat timeFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+    	//need to add long for timezone fixing
+        String strTime = timeFormat.format(new Date().getTime() + 7L * 60L * 60L * 1000L);
+    	chat.add(username + ": " + strTime + "<br>" + TextCleaner.filter(
+    			sendMessage.substring(0, Math.min(1000, sendMessage.length()))) + "<br>"
     			);
     	lastAdded++;
     	//adding index of the last message and the # separator
