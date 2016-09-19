@@ -64,15 +64,12 @@ h1 {
 <button type='button' id='answerButton'>Отправить сообщение</button> 
 </div>
 <div id='chat'>
-<div id='chatStart'>Начало чата.</div>
 </div>
 </div>
 </div>
 <script>
 //if changing chatlength, change the same property in Chat.java
 chatLength = 100;
-
-chatStartRemoved = false;
 
 $(document).ready(function(){
 function refresh(message_id){
@@ -94,14 +91,7 @@ function refresh(message_id){
 		if($( ".msg" ).size() > chatLength)
 			for(var i = chatLength; i < $( ".msg" ).size();)
 				$( ".msg" ).toArray()[chatLength].remove();
-		
-		if(!chatStartRemoved)
-			if(chatLength <= lastId){
-				$( "#chatStart" ).remove();
-				chatStartRemoved = true;
-			}
-		
-		
+
 		//set timeout to the next refresh call
 		setTimeout(function(lastId){
 			refresh(lastId);	

@@ -4,9 +4,13 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.*;
 import javax.servlet.annotation.*;
 import javax.servlet.http.*;
+
+import org.apache.tomcat.jdbc.pool.DataSource;
 
 import arrays.MagicStringArray;
 
@@ -27,19 +31,58 @@ public class Chat extends HttpServlet {
       return true;
   }
   
+  public void postMessage(String username, String message){
+	  SimpleDateFormat timeFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+  	  //need to add long for timezone fixing
+      String strTime = timeFormat.format(new Date().getTime() + 7L * 60L * 60L * 1000L);
+	  chat.add(username + ": " + strTime + "<br>" + TextCleaner.filter(
+  			message.substring(0, Math.min(1000, message.length()))) + "<br>"
+  			);
+  	  lastAdded++;
+  }
+  public void postSystemMessage(String message){
+	  chat.add("SYSTEM: " + "<br>" + TextCleaner.filter(
+  			message.substring(0, Math.min(1000, message.length()))) + "<br>"
+  			);
+  	  lastAdded++;
+  }
+  
   @Override
   public void init(){
-	  //chat messages are contained here.
-	  //last added- index of the last message, -1 for the empty chat.
+	//chat messages are contained here.
+	//last added- index of the last message, -1 for the empty chat.
 	  
-	  //to change chat implementation back to vector (if it works ok, dont do it), 
-	  //change MagicStringArray to Vector and delete condition at chat printing
+	//to change chat implementation back to vector (if it works ok, dont do it), 
+	//change MagicStringArray to Vector and delete condition at chat printing
 	  
-	  //if changing chatlength, change the same property in room.jsp
+	//if changing chatlength, change the same property in room.jsp
 	  
-	  int chatLength=100;
-	  chat=new MagicStringArray(chatLength);
-	  lastAdded=-1;
+	int chatLength=100;
+	chat=new MagicStringArray(chatLength);
+	lastAdded=-1;
+	
+	postSystemMessage("CHAT START");
+	  
+	InitialContext cxt;
+	try {
+		  cxt = new InitialContext();
+	
+		  if ( cxt == null ) {
+		     throw new Exception("Uh oh -- no context!");
+		  }
+	
+		  DataSource ds = (DataSource) cxt.lookup( "java:/comp/env/jdbc/postgres" );
+	
+		  if ( ds == null ) {
+		     throw new Exception("Data source not found!");
+		  }
+	} catch (Exception e) {
+		postSystemMessage("DB ERROR");
+		postSystemMessage(e.getMessage());		
+	}
+	  
+	  
+	  
   } 
   
   @Override
@@ -67,13 +110,9 @@ public class Chat extends HttpServlet {
     String username=session.getAttribute("username").toString();
     
     if(sendMessage!=null){
-    	SimpleDateFormat timeFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
-    	//need to add long for timezone fixing
-        String strTime = timeFormat.format(new Date().getTime() + 7L * 60L * 60L * 1000L);
-    	chat.add(username + ": " + strTime + "<br>" + TextCleaner.filter(
-    			sendMessage.substring(0, Math.min(1000, sendMessage.length()))) + "<br>"
-    			);
-    	lastAdded++;
+    	postMessage(username, TextCleaner.filter(
+    			sendMessage.substring(0, Math.min(1000, sendMessage.length()))
+    			));
     	//adding index of the last message and the # separator
     	out.print(lastAdded + "#");
     }else if(refreshFrom != null && refreshFrom != ""){   
