@@ -34,7 +34,11 @@ public class Autorizator extends HttpServlet  {
     Vector<String> users = (Vector<String>) getServletContext().getAttribute("users");
     
     String username = TextCleaner.filter(request.getParameter("username"));
-	if (users.indexOf(username)==-1 && !username.equals("")){
+	if (
+			users.indexOf(username)==-1 &&
+			!username.equals("") &&
+			username.toLowerCase().indexOf("system") == -1
+		){
 	    if (username.length() >= 30)
 	    	username = username.substring(0, 31);
 	    session.setAttribute("username", username);

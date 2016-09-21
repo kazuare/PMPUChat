@@ -1,11 +1,14 @@
 package main;
 
 import java.io.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.*;
 import javax.servlet.annotation.*;
 import javax.servlet.http.*;
@@ -14,14 +17,12 @@ import org.apache.tomcat.jdbc.pool.DataSource;
 
 import arrays.MagicStringArray;
 
-/** Simple servlet for testing. Generates HTML instead of plain
- *  text as with the HelloWorld servlet.
- */
 
 @WebServlet("/Chat")
 public class Chat extends HttpServlet {
   private MagicStringArray chat;
   private int lastAdded;
+  private Connection connection;
   public static boolean isPosInt(String str)
   {
       for (char c : str.toCharArray())
@@ -32,21 +33,59 @@ public class Chat extends HttpServlet {
   }
   
   public void postMessage(String username, String message){
-	  SimpleDateFormat timeFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+	  SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
   	  //need to add long for timezone fixing
       String strTime = timeFormat.format(new Date().getTime() + 7L * 60L * 60L * 1000L);
 	  chat.add(username + ": " + strTime + "<br>" + TextCleaner.filter(
   			message.substring(0, Math.min(1000, message.length()))) + "<br>"
   			);
   	  lastAdded++;
+  	  
+	  PreparedStatement pstmt;
+	  try {
+	      connection.setAutoCommit(false);
+	      pstmt = connection.prepareStatement(
+	    		  "INSERT INTO messages(index,nickname,message,time) VALUES (" 
+	    		  + lastAdded + ", '"
+	    		  + username + "', '" 
+	    		  + TextCleaner.filter( message.substring(0, Math.min(1000, message.length()))) + "', '" 
+	    		  + strTime + ":00');");
+	      pstmt.executeUpdate();
+	
+	      connection.commit();
+	      pstmt.close();
+	
+	    } catch(Exception e){
+	    	postSystemMessage("DB ERROR");
+	    	postSystemMessage(e.getMessage());
+	    }
+  	  
   }
   public void postSystemMessage(String message){
-	  chat.add("SYSTEM: " + "<br>" + TextCleaner.filter(
-  			message.substring(0, Math.min(1000, message.length()))) + "<br>"
-  			);
-  	  lastAdded++;
+	  postMessage("SYSTEM", message);
   }
-  
+  public String retrieveMessage(int index){
+	  try{
+		  if(index > lastAdded)
+			  throw new Exception("index is greater than index of the last added!");
+		  PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM messages where index = ?;");
+		  preparedStatement.setInt(1, index);
+	
+		  ResultSet message = preparedStatement.executeQuery();
+		
+		  SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");  	  
+		  if(message.next()){
+	      String strTime = timeFormat.format(message.getTimestamp("time"));
+		  return message.getString("nickname") +
+			": " + strTime + 
+			"<br>" + message.getString("message") + "<br>";    	  
+		  }
+	  } catch (Exception e) {
+			postSystemMessage(e.getMessage());		
+			return e.getMessage();
+	  }
+	  return "error - no 'next' in message retriever";
+  }
   @Override
   public void init(){
 	//chat messages are contained here.
@@ -61,9 +100,8 @@ public class Chat extends HttpServlet {
 	chat=new MagicStringArray(chatLength);
 	lastAdded=-1;
 	
-	postSystemMessage("CHAT START");
-	  
 	InitialContext cxt;
+	DataSource ds;
 	try {
 		  cxt = new InitialContext();
 	
@@ -71,19 +109,45 @@ public class Chat extends HttpServlet {
 		     throw new Exception("Uh oh -- no context!");
 		  }
 	
-		  DataSource ds = (DataSource) cxt.lookup( "java:/comp/env/jdbc/postgres" );
+		  ds = (DataSource) cxt.lookup( "java:/comp/env/jdbc/postgres" );
 	
 		  if ( ds == null ) {
 		     throw new Exception("Data source not found!");
 		  }
+		  connection = ds.getConnection("PMPU","korovkin");
+	
+	
+		  PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM messages;");
+
+		  ResultSet initialMessages = preparedStatement.executeQuery();
+		
+		  SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");  	  
+		  
+	      while (initialMessages.next()) {
+	    	  String strTime = timeFormat.format(initialMessages.getTimestamp("time"));
+			  chat.add(initialMessages.getString("nickname") +
+					  ": " + strTime + 
+					  "<br>" + initialMessages.getString("message") + "<br>"
+		  			);
+		  	  lastAdded++;	    	  
+          }
+	      
+	      if(lastAdded == -1)	      
+	    	  postSystemMessage("CHAT START");
+	
 	} catch (Exception e) {
 		postSystemMessage("DB ERROR");
 		postSystemMessage(e.getMessage());		
 	}
-	  
-	  
-	  
   } 
+  
+  @Override
+  public void destroy() {
+	  if (connection != null)
+		try {
+			connection.close();
+		} catch (SQLException e) {}
+  }
   
   @Override
   public void doPost(HttpServletRequest request,
@@ -120,7 +184,8 @@ public class Chat extends HttpServlet {
     	//--not working for some reason,commented--if(isPosInt(refreshFrom)||refreshFrom.substring(0,2)=="-1"){
     		out.print(lastAdded + "#");
 	    	for(int i = lastAdded; i > Integer.parseInt(refreshFrom) && i >= chat.getFirstIndex(); i--)
-	    		out.print("<div class='msg'>" + chat.get(i) + "</div>");
+	    		out.print("<div class='msg'>" + retrieveMessage(i) + "</div>");
+	    		//out.print("<div class='msg'>" + chat.get(i) + "</div>");
 	    	out.close();
     	//}
     }
