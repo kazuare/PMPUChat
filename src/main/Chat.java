@@ -47,9 +47,12 @@ public class Chat extends HttpServlet {
 	      pstmt = connection.prepareStatement(
 	    		  "INSERT INTO messages(index,nickname,message,time) VALUES (" 
 	    		  + lastAdded + ", '"
-	    		  + username + "', '" 
-	    		  + TextCleaner.filter( message.substring(0, Math.min(1000, message.length()))) + "', '" 
+	    		  + username + "', " 
+	    		  + "?, '" 
 	    		  + strTime + ":00');");
+	      pstmt.setString(1, 
+	    		  TextCleaner.filter( message.substring(0, Math.min(1000, message.length())))
+	    		  );
 	      pstmt.executeUpdate();
 	
 	      connection.commit();
