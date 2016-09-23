@@ -36,7 +36,7 @@ public class Chat extends HttpServlet {
 	  SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
   	  //need to add long for timezone fixing
       String strTime = timeFormat.format(new Date().getTime() + 7L * 60L * 60L * 1000L);
-	  chat.add(username + ": " + strTime + "<br>" + TextCleaner.filter(
+	  chat.add("<p>" + username + ": " + strTime + "</p>" + TextCleaner.filter(
   			message.substring(0, Math.min(1000, message.length()))) + "<br>"
   			);
   	  lastAdded++;
@@ -76,9 +76,9 @@ public class Chat extends HttpServlet {
 		  SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");  	  
 		  if(message.next()){
 	      String strTime = timeFormat.format(message.getTimestamp("time"));
-		  return message.getString("nickname") +
+		  return "<p>" + message.getString("nickname") +
 			": " + strTime + 
-			"<br>" + message.getString("message") + "<br>";    	  
+			"</p>" + message.getString("message") + "<br>";    	  
 		  }
 	  } catch (Exception e) {
 			postSystemMessage(e.getMessage());		
@@ -125,9 +125,9 @@ public class Chat extends HttpServlet {
 		  
 	      while (initialMessages.next()) {
 	    	  String strTime = timeFormat.format(initialMessages.getTimestamp("time"));
-			  chat.add(initialMessages.getString("nickname") +
+			  chat.add("<p>" + initialMessages.getString("nickname") +
 					  ": " + strTime + 
-					  "<br>" + initialMessages.getString("message") + "<br>"
+					  "</p>" + initialMessages.getString("message") + "<br>"
 		  			);
 		  	  lastAdded++;	    	  
           }
@@ -174,9 +174,10 @@ public class Chat extends HttpServlet {
     String username=session.getAttribute("username").toString();
     
     if(sendMessage!=null){
-    	postMessage(username, TextCleaner.filter(
-    			sendMessage.substring(0, Math.min(1000, sendMessage.length()))
-    			));
+    	if(sendMessage != "")
+	    	postMessage(username, TextCleaner.filter(
+	    			sendMessage.substring(0, Math.min(1000, sendMessage.length()))
+	    			));
     	//adding index of the last message and the # separator
     	out.print(lastAdded + "#");
     }else if(refreshFrom != null && refreshFrom != ""){   

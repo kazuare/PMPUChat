@@ -10,9 +10,16 @@
 <title>room</title>
 <style>
 body {
-    background-color: #81E254;
+    background-color: #000000;
     width:100%;
     overflow-x: hidden;
+    
+    font-size: medium;
+    
+    background: url(/music/back.jpg);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: 100% 100%;
 }
 #main {
     width:60%;
@@ -20,8 +27,8 @@ body {
 } 
 #bordered{
     width:100%;
-    background-color:#9ae876;
-    border-color: #81E254 #508e33 #508e33; 
+    background-color:#c1c4d0;
+    border-color: #1a242f; 
     border-style: solid;  
     border-width: 1px;
 }
@@ -41,13 +48,16 @@ body {
 #chat div{
     width:90%;
     margin: 1em;
-    border-color: #508e33; 
-    border-style: solid;  
-    border-width: 1px;	
+    background-color:#d5d9e5;
 }
 #greeting {
-	
+	color: #FFFFFF;
 }
+/*
+.user {
+	text-decoration: underline;
+}
+*/
 h1 {
     text-align:center;
 } 
@@ -114,7 +124,7 @@ refresh(-1);
 		"type: 'POST',"+
 		"url: 'Autorizator',"+
 		" async:false, "+
-		"success: function(){$('#greeting').text('Hello, ' + name)},"+
+		"success: function(){$('#greeting').text('Hello, ' + name + '.')},"+
 		"data:{username:name=prompt('Enter your username:')}"+
 	"}).responseText;"+
 	"while(serverAnswer!='1')" +
