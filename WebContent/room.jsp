@@ -9,9 +9,14 @@
 <script src='http://code.jquery.com/jquery-latest.min.js' type='text/javascript'></script>
 <title>room</title>
 <style>
+
+html{
+    height: 100%;
+}
 body {
     background-color: #000000;
     width:100%;
+    height: 100%;
     overflow-x: hidden;
     
     font-size: medium;
@@ -101,7 +106,15 @@ function refresh(message_id){
 		if($( ".msg" ).size() > chatLength)
 			for(var i = chatLength; i < $( ".msg" ).size();)
 				$( ".msg" ).toArray()[chatLength].remove();
-
+		
+				
+		if ($( window ).width() < $( window ).height()){
+			if ($(document.body).css( "background-size" ) == '100% 100%')
+				$(document.body).css( "background-size", "cover" );			
+		}else{
+			if ($(document.body).css( "background-size" ) == "cover")
+				$(document.body).css( "background-size", '100% 100%' );			
+		}
 		//set timeout to the next refresh call
 		setTimeout(function(lastId){
 			refresh(lastId);	
