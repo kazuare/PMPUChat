@@ -7,7 +7,17 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <script src='http://code.jquery.com/jquery-latest.min.js' type='text/javascript'></script>
-<title>room</title>
+<script type="text/javascript">
+  function iframeLoaded() {
+      var iFrameID = document.getElementById('idIframe');
+      if(iFrameID) {
+            iFrameID.height = "";
+            iFrameID.height = iFrameID.contentWindow.document.body.scrollHeight + "px";
+         
+      }   
+  }
+</script>  
+<title>Счетчик шарфов</title>
 <style>
 
 html{
@@ -36,17 +46,7 @@ body {
     border-color: #1a242f; 
     border-style: solid;  
     border-width: 1px;
-}
-#answerDiv{
-    width:100%;
-    text-align:right;
 } 
-#answer {
-    width:100%;
-    height:5em;
-    border: none;
-    padding:0;
-}  
 #chat {
     width:100%;
 } 
@@ -57,27 +57,32 @@ body {
 }
 #greeting {
 	color: #FFFFFF;
+	text-align:right;
 }
-/*
-.user {
-	text-decoration: underline;
+#total {
+	color: #FFFFFF;
 }
-*/
 h1 {
     text-align:center;
 } 
+wbr { display: inline-block; }
+.msg img {
+	max-height: 400px; 
+	max-width: 400px;
+}
 </style>
 </head>
 <body>
 <div id='main'>
 <p id='greeting'><%= (session.getAttribute("username")!=null) ? "Hello, "+session.getAttribute("username") :
 	"Not logged in" %>.</p>
-<audio src='/music/Free.mp3' controls ></audio>
+<h1 id = 'total'></h1>
 <div id='bordered'>
-<textarea id='answer'></textarea>
-<div id='answerDiv'>
-<button type='button' id='answerButton'>Отправить сообщение</button> 
-</div>
+<div style="background-color:#d5d9e5;">
+ <iframe src="form.jsp" width="100%" frameborder="0" id="idIframe" onload="iframeLoaded()">
+    Ваш браузер не поддерживает плавающие фреймы(чем вы пользуетесь?...)!
+ </iframe>
+ </div>
 <div id='chat'>
 </div>
 </div>
@@ -87,48 +92,50 @@ h1 {
 chatLength = 100;
 
 $(document).ready(function(){
-function refresh(message_id){
-	$.ajax({
-	  type: "POST",
-	  //we got message_id from the previous refresh call
-	  url: 'Chat',
-	  data:{refreshFrom: message_id.toString()},
-      timeout:1000 * 50,
-	  success: function( data ) {
-		charIndex=data.indexOf('#');
-		//this gets the actual number of messages at client and server side (these are equal at the moment)
-		lastId=parseInt(data.substring(0, charIndex));
-		data=data.substring(charIndex + 1);
+	//messages refresher initialize
+	function refresh(message_id){
+		$.ajax({
+		  type: "GET",
+		  //we got message_id from the previous refresh call
+		  url: 'Manager',
+		  data:{refreshFrom: message_id.toString()},
+	      timeout:1000 * 50,
+		  success: function( data ) {
+			charIndex=data.indexOf('#');
+			//this gets the actual number of messages at client and server side (these are equal at the moment)
+			lastId=parseInt(data.substring(0, charIndex));
+			data=data.substring(charIndex + 1);
+			
+			if(lastId != message_id)
+		  		$( '#chat' ).prepend(data);
+			
+			if($( ".msg" ).size() > chatLength)
+				for(var i = chatLength; i < $( ".msg" ).size();)
+					$( ".msg" ).toArray()[chatLength].remove();
+			
+			$("#total").text("Всего связано:" + $('.msg').length);
+					
+			if ($( window ).width() < $( window ).height()){
+				if ($(document.body).css( "background-size" ) == '100% 100%')
+					$(document.body).css( "background-size", "cover" );			
+			}else{
+				if ($(document.body).css( "background-size" ) == "cover")
+					$(document.body).css( "background-size", '100% 100%' );			
+			}
+			//set timeout to the next refresh call
+			setTimeout(function(lastId){
+				refresh(lastId);	
+				console.log("messages refresh");
+			}, 500,lastId);},
+		  error: function() {
+				console.log("refresh error");
+				refresh();	
+		  }
 		
-		if(lastId != message_id)
-	  		$( '#chat' ).prepend(data);
-		
-		if($( ".msg" ).size() > chatLength)
-			for(var i = chatLength; i < $( ".msg" ).size();)
-				$( ".msg" ).toArray()[chatLength].remove();
-		
-				
-		if ($( window ).width() < $( window ).height()){
-			if ($(document.body).css( "background-size" ) == '100% 100%')
-				$(document.body).css( "background-size", "cover" );			
-		}else{
-			if ($(document.body).css( "background-size" ) == "cover")
-				$(document.body).css( "background-size", '100% 100%' );			
-		}
-		//set timeout to the next refresh call
-		setTimeout(function(lastId){
-			refresh(lastId);	
-			console.log("messages refresh");
-		}, 500,lastId);},
-	  error: function() {
-			console.log("refresh error");
-			refresh();	
-	  }
-	
-	});
-}
-//starting with no messages at all, get all at first iteration, then ask for updates with recursion
-refresh(-1);
+		});
+	}
+	//starting with no messages at all, get all at first iteration, then ask for updates with recursion
+	refresh(-1);
 });
 <%= (session.getAttribute("username")!=null) ? "" :	
 	"var name;"+
@@ -153,7 +160,7 @@ refresh(-1);
 $("#answerButton").click(function(){
 	$.ajax({
 		  type: "POST",
-		  url: 'Chat',
+		  url: 'Manager',
 		  data:{sendMessage:$("#answer").val()},
 		  //do nothing on success, updating is refresh()'s job
 		  success: function( data ) {}

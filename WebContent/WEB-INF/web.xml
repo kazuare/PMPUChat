@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app>
 
-<listener>
-	<listener-class>main.SessionListener</listener-class>
-</listener>
-
 <resource-ref>
 	<description>postgreSQL Datasource</description>
   	<res-ref-name>jdbc/postgres</res-ref-name>

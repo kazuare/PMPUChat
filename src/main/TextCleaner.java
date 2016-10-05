@@ -5,11 +5,10 @@ import javax.servlet.http.*;
 public class TextCleaner {
 
   public static String filter(String input) {
-    if (!hasSpecialChars(input)) {
-      return(input);
-    }
     StringBuilder filtered = new StringBuilder(input.length());
     char c;
+    int wordCharsCount = 0;
+    int lengthToBreak = 20;
     for(int i=0; i<input.length(); i++) {
       c = input.charAt(i);
       switch(c) {
@@ -19,19 +18,17 @@ public class TextCleaner {
         case '&': filtered.append("&amp;"); break;
         default: filtered.append(c);
       }
+      if(c == ' ' || c == '\r'){
+    	  wordCharsCount = 0;
+      }else{
+    	  wordCharsCount += 1;
+      }
+      if(wordCharsCount == lengthToBreak){
+    	  filtered.append("<wbr>");
+    	  wordCharsCount = 0;
+      }
     }
     return(filtered.toString());
-  }
-
-  private static boolean hasSpecialChars(String input) {
-    if ((input != null) && (input.length()!=0)) 
-      for(int i=0; i<input.length(); i++) 
-        if(input.charAt(i)=='<'||
-        	input.charAt(i)=='>'||
-        	input.charAt(i)=='"'||
-        	input.charAt(i)=='&')
-        	return true;
-     return false;
   }
   
 }

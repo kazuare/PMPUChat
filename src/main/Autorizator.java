@@ -7,11 +7,6 @@ import javax.servlet.*;
 import javax.servlet.annotation.*;
 import javax.servlet.http.*;
 
-import arrays.MagicStringArray;
-
-/** Simple servlet for testing. Generates HTML instead of plain
- *  text as with the HelloWorld servlet.
- */
 
 @WebServlet("/Autorizator")
 public class Autorizator extends HttpServlet  {
