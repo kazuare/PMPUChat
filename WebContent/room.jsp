@@ -80,7 +80,7 @@ wbr { display: inline-block; }
 <div id='bordered'>
 <div style="background-color:#d5d9e5;">
  <iframe src="form.jsp" width="100%" frameborder="0" id="idIframe" onload="iframeLoaded()">
-    Ваш браузер не поддерживает плавающие фреймы(чем вы пользуетесь?...)!
+    Ваш браузер не поддерживает плавающие фреймы(чем вы пользуетесь?...)
  </iframe>
  </div>
 <div id='chat'>
@@ -89,7 +89,9 @@ wbr { display: inline-block; }
 </div>
 <script>
 //if changing chatlength, change the same property in Chat.java
-chatLength = 100;
+chatLength = 15;
+
+totalScarfs = 0;
 
 $(document).ready(function(){
 	//messages refresher initialize
@@ -101,10 +103,12 @@ $(document).ready(function(){
 		  data:{refreshFrom: message_id.toString()},
 	      timeout:1000 * 50,
 		  success: function( data ) {
-			charIndex=data.indexOf('#');
-			//this gets the actual number of messages at client and server side (these are equal at the moment)
-			lastId=parseInt(data.substring(0, charIndex));
-			data=data.substring(charIndex + 1);
+			charIndex = data.indexOf('#');
+			//this gets the actual number of messages at the server side and the actual scarf number
+			lastId = parseInt(data.substring(0, charIndex));
+			totalScarfs = parseInt(data.substring(charIndex + 1, data.indexOf('%')));
+			charIndex = data.indexOf('%');
+			data = data.substring(charIndex + 1);
 			
 			if(lastId != message_id)
 		  		$( '#chat' ).prepend(data);
@@ -113,7 +117,7 @@ $(document).ready(function(){
 				for(var i = chatLength; i < $( ".msg" ).size();)
 					$( ".msg" ).toArray()[chatLength].remove();
 			
-			$("#total").text("Всего связано:" + $('.msg').length);
+			$("#total").text("Всего связано:" + totalScarfs);
 					
 			if ($( window ).width() < $( window ).height()){
 				if ($(document.body).css( "background-size" ) == '100% 100%')
@@ -138,7 +142,7 @@ $(document).ready(function(){
 	refresh(-1);
 });
 <%= (session.getAttribute("username")!=null) ? "" :	
-	"var name;"+
+	"var name;"/*+
 	"serverAnswer='0';"+
 	" serverAnswer=$.ajax({"+
 		"type: 'POST',"+
@@ -154,9 +158,10 @@ $(document).ready(function(){
 		"async:false, "+
 		"success: function(){$('#greeting').text('Hello, ' + name)},"+
 		"data:{username:name=prompt('This username is invalid or is already taken, \\n please choose another one:')}"+
-	"}).responseText;"
+	"}).responseText;"*/
 		%>
 
+	/*
 $("#answerButton").click(function(){
 	$.ajax({
 		  type: "POST",
@@ -168,6 +173,7 @@ $("#answerButton").click(function(){
 	//clear the text field
 	$("#answer").val("");
 });
+	*/
 </script>
 </body>
 </html>
