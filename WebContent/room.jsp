@@ -90,7 +90,8 @@ wbr { display: inline-block; }
 <script>
 //if changing chatlength, change the same property in Chat.java
 chatLength = 15;
-
+extendedChat = false;
+messagesLeft = true;
 totalScarfs = 0;
 
 $(document).ready(function(){
@@ -104,18 +105,44 @@ $(document).ready(function(){
 	      timeout:1000 * 50,
 		  success: function( data ) {
 			charIndex = data.indexOf('#');
-			//this gets the actual number of messages at the server side and the actual scarf number
+			//this gets the actual number of messages and the actual scarf number at the server side 
 			lastId = parseInt(data.substring(0, charIndex));
 			totalScarfs = parseInt(data.substring(charIndex + 1, data.indexOf('%')));
 			charIndex = data.indexOf('%');
 			data = data.substring(charIndex + 1);
 			
+			if((lastId+1>chatLength) && messagesLeft){
+				if (!($("#more").length)){
+					$( '#chat' ).append("<div id='more'> Нажмите сюда, чтобы посмотреть больше... </div>");
+					$("#more").click(function(){
+						$.ajax({
+							  type: "GET",
+							  url: 'Manager',
+							  data:{
+								  id: lastId, 
+								  len: $( ".msg" ).size()
+							  },
+							  success: function( data ) {
+								  extendedChat = true;
+								  $( '#chat' ).append(data.substring(1));
+								  if(data[0] == "1"){
+								  	$( '#chat' ).append($( "#more" ));	
+								  }else{
+									  $( "#more" ).remove(); 
+									  messagesLeft = false;
+								  }
+							  }
+							});
+					});
+				}
+			}
+			
 			if(lastId != message_id)
 		  		$( '#chat' ).prepend(data);
-			
-			if($( ".msg" ).size() > chatLength)
-				for(var i = chatLength; i < $( ".msg" ).size();)
-					$( ".msg" ).toArray()[chatLength].remove();
+			if(!extendedChat)
+				if($( ".msg" ).size() > chatLength)
+					for(var i = chatLength; i < $( ".msg" ).size();)
+						$( ".msg" ).toArray()[chatLength].remove();
 			
 			$("#total").text("Всего связано:" + totalScarfs);
 					
@@ -130,7 +157,7 @@ $(document).ready(function(){
 			setTimeout(function(lastId){
 				refresh(lastId);	
 				console.log("messages refresh");
-			}, 500,lastId);},
+			}, 1000,lastId);},
 		  error: function() {
 				console.log("refresh error");
 				refresh();	

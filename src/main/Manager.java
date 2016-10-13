@@ -1,5 +1,6 @@
 package main;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,6 +49,7 @@ public class Manager extends HttpServlet {
 		  SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	  	  //need to add long for timezone fixing
 	      String strTime = timeFormat.format(new Date().getTime() + 7L * 60L * 60L * 1000L);
+	      
 	      synchronized (this){
 	    	  lastAdded++;
 		  	  if(!username.equals("SYSTEM"))
@@ -142,7 +144,7 @@ public class Manager extends HttpServlet {
 	          }
 		      
 		      if(lastAdded == -1){	      
-		    	  postSystemMessage("CHAT START");
+		    	  postSystemMessage("Начало.");
 		      }else{
 		    	  preparedStatement = connection.prepareStatement("SELECT COUNT(index) AS i FROM messages WHERE nickname != 'SYSTEM';");
 		    	  ResultSet scarfsCountResult = preparedStatement.executeQuery();
@@ -175,6 +177,9 @@ public class Manager extends HttpServlet {
 		    PrintWriter out = response.getWriter();
 		    
 		    String refreshFrom = request.getParameter("refreshFrom");
+		    String id = request.getParameter("id");
+		    String len = request.getParameter("len");
+		    
 		    
 		    //response structure is:
 		    //if client is asking for updates:
@@ -190,6 +195,18 @@ public class Manager extends HttpServlet {
 			    		out.print("<div class='msg'>" + retrieveMessage(i) + "</div>");
 			    	
 		    	//}
+		    }else if(id != null && !id.equals("") && len != null && !len.equals("")){
+		    	int howMuchToDispense = 5;
+		    	//if lastId is 20 and len is 10, then start is 10
+		    	int start = Integer.parseInt(id) - Integer.parseInt(len);
+		    	int destination = Math.max(start - howMuchToDispense, 0);
+		    	if(destination == 0){
+		    		out.print("0");
+		    	}else{
+		    		out.print("1");
+		    	}
+		    	for(int i = start; i >= destination; i--)
+		    		out.print("<div class='msg'>" + retrieveMessage(i) + "</div>");
 		    }
 		    out.close();
 	  }
@@ -240,6 +257,9 @@ public class Manager extends HttpServlet {
 		    if(!type.equals("invalid") ){
 		    	InputStream fileContent = filePart.getInputStream();
 		    	String path = "/music/photoes/" + (lastAdded+1) + type;
+		    	
+		    	new File(path).delete();
+		    	
 			    OutputStream out = new FileOutputStream(path); 
 			    IOUtils.copy(fileContent,out);
 			    fileContent.close();
