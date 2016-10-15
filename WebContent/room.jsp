@@ -56,8 +56,14 @@ body {
     background-color:#d5d9e5;
 }
 #greeting {
-	color: #FFFFFF;
-	text-align:right;
+	width:100%;
+}
+#greeting div{
+	float:right;
+	background-color:#d5d9e5;
+    border-color: #1a242f; 
+    border-style: solid;  
+    border-width: 1px;
 }
 #total {
 	color: #FFFFFF;
@@ -74,8 +80,14 @@ wbr { display: inline-block; }
 </head>
 <body>
 <div id='main'>
-<p id='greeting'><%= (session.getAttribute("username")!=null) ? "Hello, "+session.getAttribute("username") :
-	"Not logged in" %>.</p>
+<div id='greeting'>
+<%= 
+		( session.getAttribute( "mod" ) !=null ) ? 
+		"<div onclick=\"location.href='http://80.87.202.12:8080/game/admin.jsp?';\">&nbsp;Панель модерации&nbsp;</div>":
+		"<div><form action='Autorizator' method = 'POST'> Логин:&nbsp; <input type='text' name='login'>"+
+		"&nbsp;Пароль:&nbsp; <input type='password' name='password'>"+
+		"<input type='submit'></form></div>" 		
+%>.</div>
 <h1 id = 'total'></h1>
 <div id='bordered'>
 <div style="background-color:#d5d9e5;">
@@ -168,39 +180,7 @@ $(document).ready(function(){
 	//starting with no messages at all, get all at first iteration, then ask for updates with recursion
 	refresh(-1);
 });
-<%= (session.getAttribute("username")!=null) ? "" :	
-	"var name;"/*+
-	"serverAnswer='0';"+
-	" serverAnswer=$.ajax({"+
-		"type: 'POST',"+
-		"url: 'Autorizator',"+
-		" async:false, "+
-		"success: function(){$('#greeting').text('Hello, ' + name + '.')},"+
-		"data:{username:name=prompt('Enter your username:')}"+
-	"}).responseText;"+
-	"while(serverAnswer!='1')" +
-	"serverAnswer=$.ajax({"+
-		"type: 'POST',"+
-		"url: 'Autorizator',"+
-		"async:false, "+
-		"success: function(){$('#greeting').text('Hello, ' + name)},"+
-		"data:{username:name=prompt('This username is invalid or is already taken, \\n please choose another one:')}"+
-	"}).responseText;"*/
-		%>
 
-	/*
-$("#answerButton").click(function(){
-	$.ajax({
-		  type: "POST",
-		  url: 'Manager',
-		  data:{sendMessage:$("#answer").val()},
-		  //do nothing on success, updating is refresh()'s job
-		  success: function( data ) {}
-		});
-	//clear the text field
-	$("#answer").val("");
-});
-	*/
 </script>
 </body>
 </html>

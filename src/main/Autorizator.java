@@ -1,18 +1,46 @@
 package main;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Vector;
 
 import javax.servlet.*;
 import javax.servlet.annotation.*;
 import javax.servlet.http.*;
 
+import javafx.util.Pair;
+
 
 @WebServlet("/Autorizator")
 public class Autorizator extends HttpServlet  {
+  Vector<Pair<String,String>> mods;
+
   @Override
   public void init(){
-	  getServletContext().setAttribute("users", new Vector<String>(128));
+	  
+	mods = new Vector<Pair<String,String>>(128);
+	  
+	BufferedReader br;
+	try {
+		br = new BufferedReader(new FileReader("/music/passwords/mods.txt"));
+	
+		String line = null;
+		while ((line = br.readLine()) != null) {
+			int breakIndex = line.indexOf(' ');
+			mods.add(
+					new Pair(
+							line.substring(0, breakIndex),
+							line.substring(breakIndex + 1)
+							)
+					);
+		}
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} 
+	
+	  
   } 
   
   @Override
@@ -24,24 +52,19 @@ public class Autorizator extends HttpServlet  {
 	response.setCharacterEncoding("UTF-8");
 	
     HttpSession session = request.getSession(true);
-    PrintWriter out = response.getWriter();
+
+    String login = request.getParameter("login");
+    String password = request.getParameter("password");
     
-    Vector<String> users = (Vector<String>) getServletContext().getAttribute("users");
+    Pair<String,String> submittedPair = new Pair<String,String>(login,password);
     
-    String username = TextCleaner.filter(request.getParameter("username"));
-	if (
-			users.indexOf(username)==-1 &&
-			!username.equals("") &&
-			username.toLowerCase().indexOf("system") == -1
-		){
-	    if (username.length() >= 30)
-	    	username = username.substring(0, 31);
-	    session.setAttribute("username", username);
-		users.add(username);
-	    out.print('1');   
-    }else{
-    	out.print('0');
+    
+    if(mods.contains(submittedPair)){
+    	session.setAttribute("mod", "yes");
     }
-	out.close();
+    String nextJSP = "/game/room.jsp";
+    //RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(nextJSP);
+    //dispatcher.forward(request,response);
+    response.sendRedirect(nextJSP);
   }
 }
