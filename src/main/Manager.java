@@ -27,12 +27,21 @@ import javax.servlet.http.Part;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 
-@WebServlet("/Manager")
-@MultipartConfig
-public class Manager extends HttpServlet {
+
+public abstract class Manager extends HttpServlet {
 	private int lastAdded;
-	private Connection connection;
+	protected Connection connection;
 	private int totalScarfs = 0;
+	
+	public String getTable() {
+        return null;
+    }
+	public boolean getPermissionToPost(HttpServletRequest request) {
+        return true;
+    }
+	public boolean getPermissionToGet(HttpServletRequest request) {
+        return true;
+    }
 	
 	private final int chatLength = 15;
 	
@@ -60,7 +69,7 @@ public class Manager extends HttpServlet {
 		  try {
 		      connection.setAutoCommit(false);
 		      pstmt = connection.prepareStatement(
-		    		  "INSERT INTO messages(index,nickname,message,picture,time) VALUES (" 
+		    		  "INSERT INTO " + getTable() + "(index,nickname,message,picture,time) VALUES (" 
 		    		  + lastAdded + ", "
 		    		  + "?, ?, ?, " 
 		    		  + "'" + strTime + ":00');");
@@ -91,7 +100,7 @@ public class Manager extends HttpServlet {
 		  try{
 			  if(index > lastAdded)
 				  throw new Exception("index is greater than index of the last added!");
-			  PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM messages where index = ?;");
+			  PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + getTable() + " where index = ?;");
 			  preparedStatement.setInt(1, index);
 		
 			  ResultSet message = preparedStatement.executeQuery();
@@ -135,7 +144,7 @@ public class Manager extends HttpServlet {
 			  connection = ds.getConnection("PMPU","korovkin");
 		
 		
-			  PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(index) AS i FROM messages;");
+			  PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(index) AS i FROM " + getTable() + ";");
 
 			  ResultSet initialMessages = preparedStatement.executeQuery();
 			
@@ -146,7 +155,7 @@ public class Manager extends HttpServlet {
 		      if(lastAdded == -1){	      
 		    	  postSystemMessage("Начало.");
 		      }else{
-		    	  preparedStatement = connection.prepareStatement("SELECT COUNT(index) AS i FROM messages WHERE nickname != 'SYSTEM';");
+		    	  preparedStatement = connection.prepareStatement("SELECT COUNT(index) AS i FROM " + getTable() + " WHERE nickname != 'SYSTEM';");
 		    	  ResultSet scarfsCountResult = preparedStatement.executeQuery();
 					
 			      while (scarfsCountResult.next()) {
@@ -167,9 +176,11 @@ public class Manager extends HttpServlet {
 				connection.close();
 			} catch (SQLException e) {}
 	  }
+	  //retrieves message from database
 	  @Override
 	  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		//encoding stuff. must be written in the beginning of every servlet
+	  if(getPermissionToGet(request)){
+			//encoding stuff. must be written in the beginning of every servlet
 			request.setCharacterEncoding("UTF-8");
 			response.setCharacterEncoding("UTF-8");
 			
@@ -210,9 +221,13 @@ public class Manager extends HttpServlet {
 		    }
 		    out.close();
 	  }
+	  }
+	  
+	  //adds message to the database
 	  @Override
 	  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		  	//encoding stuff. must be written in the beginning of every servlet do method
+	  if(getPermissionToPost(request)){	  	
+		    //encoding stuff. must be written in the beginning of every servlet do method
 			request.setCharacterEncoding("UTF-8");
 			response.setCharacterEncoding("UTF-8");
 		  
@@ -282,6 +297,6 @@ public class Manager extends HttpServlet {
 		    
 		    output.close();
 		}
-	
+	    }
 	
 }

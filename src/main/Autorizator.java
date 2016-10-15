@@ -63,8 +63,6 @@ public class Autorizator extends HttpServlet  {
     	session.setAttribute("mod", "yes");
     }
     String nextJSP = "/game/room.jsp";
-    //RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(nextJSP);
-    //dispatcher.forward(request,response);
     response.sendRedirect(nextJSP);
   }
 }
