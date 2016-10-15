@@ -14,9 +14,15 @@ public class ApprovedManager extends Manager{
     }
 	@Override
 	public boolean getPermissionToPost(HttpServletRequest request) {
+		
+		//must be deleted later
+		return true;
+		
+		
+		/*
 		HttpSession session = request.getSession(true);
 		if(session.getAttribute( "mod" ) !=null)
 			return true;
-		return false;
+		return false;*/
     }
 }
