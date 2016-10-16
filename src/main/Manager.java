@@ -107,17 +107,17 @@ public abstract class Manager extends HttpServlet {
 			
 			  SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");  	  
 			  if(message.next()){
-		      String strTime = timeFormat.format(message.getTimestamp("time"));
-		      String pic = message.getString("picture");
-		      if(!pic.equals("SYSTEM")){
-		    	  pic = "<br/><img src='" + pic + "'/>";
-		      }else{
-		    	  pic = "";
-		      }
-			  return "<p>" + message.getString("nickname") +
-				": " + strTime + 
-				"</p>" + message.getString("message") + 
-				"<br>" + pic;    	  
+			      String strTime = timeFormat.format(message.getTimestamp("time"));
+			      String pic = message.getString("picture");
+			      if(!pic.equals("SYSTEM")){
+			    	  pic = "<br/><img src='" + pic + "'/>";
+			      }else{
+			    	  pic = "";
+			      }
+				  return "<p>" + message.getString("nickname") +
+					": " + strTime + 
+					"</p>" + message.getString("message") + 
+					"<br>" + pic;    	  
 			  }
 		  } catch (Exception e) {
 				postSystemMessage(e.getMessage());		

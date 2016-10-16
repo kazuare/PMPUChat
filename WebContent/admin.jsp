@@ -5,6 +5,10 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Insert title here</title>
+<% 
+if(session.getAttribute( "mod" ) ==null)
+	response.sendRedirect("room.jsp"); 
+%>
 </head>
 <body>
 	Крутая админка, да?
