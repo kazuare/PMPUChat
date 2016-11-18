@@ -59,7 +59,7 @@ public abstract class Manager extends HttpServlet {
 	      return true;
 	  }
 	
-	public void postMessage(String username, String message, String path){
+	public void postMessage(String username, String contacts, String message, String path){
 		  SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	  	  //need to add long for timezone fixing
 	      String strTime = timeFormat.format(new Date().getTime() + 7L * 60L * 60L * 1000L);
@@ -74,19 +74,14 @@ public abstract class Manager extends HttpServlet {
 		  try {
 		      //connection.setAutoCommit(false);
 		      pstmt = connection.prepareStatement(
-		    		  "INSERT INTO " + getTable() + "(index,nickname,message,picture,time) VALUES (" 
+		    		  "INSERT INTO " + getTable() + "(index,nickname,contacts,message,picture,time) VALUES (" 
 		    		  + lastAdded + ", "
-		    		  + "?, ?, ?, " 
+		    		  + "?, ?, ?, ?, " 
 		    		  + "'" + strTime + ":00');");
-		      pstmt.setString(1, 
-		    		  TextCleaner.filter( username.substring(0, Math.min(100, username.length())))
-		    		  );
-		      pstmt.setString(2, 
-		    		  TextCleaner.filter( message.substring(0, Math.min(1000, message.length())))
-		    		  );
-		      pstmt.setString(3, 
-		    		  path
-		    		  );
+		      pstmt.setString(1, TextCleaner.prepareForPosting(username, 100) );
+		      pstmt.setString(2, TextCleaner.prepareForPosting(contacts, 100) );
+		      pstmt.setString(3, TextCleaner.prepareForPosting(message, 1000) );
+		      pstmt.setString(4, path );
 		      pstmt.executeUpdate();
 		
 		      pstmt.close();
@@ -98,7 +93,7 @@ public abstract class Manager extends HttpServlet {
 	  	  
 	  }
 	  public void postSystemMessage(String message){
-		  postMessage("SYSTEM", message, "SYSTEM");
+		  postMessage("SYSTEM", "", message, "SYSTEM");
 	  }
 	  public boolean thereArePosts(){
 		  try{
@@ -138,11 +133,14 @@ public abstract class Manager extends HttpServlet {
 			      String strTime = timeFormat.format(message.getTimestamp("time"));
 			      String pic = message.getString("picture");
 			      if(!pic.equals("SYSTEM")){
-			    	  pic = "<br/><img src='" + pic + "'/>";
+			    	  pic = "<br/><img src='" + pic + "?" + Math.floor(Math.random()*6000) + "'/>";
 			      }else{
 			    	  pic = "";
 			      }
-				  return "<p>" + message.getString("nickname") +
+			      String contacts = message.getString("contacts");
+			      if(!contacts.equals(""))
+			    	  contacts = " (" + contacts + ")";
+				  return "<p>" + message.getString("nickname") + contacts+
 					": " + strTime + 
 					"</p>" + message.getString("message") + 
 					"<br>" + pic;    	  
@@ -179,9 +177,7 @@ public abstract class Manager extends HttpServlet {
 			  	  lastAdded = initialMessages.getInt("i") - 1;	    	  
 	          }
 		      
-		      if(lastAdded == -1){	      
-		    	  postSystemMessage("Начало.");
-		      }else{
+		      if(lastAdded != -1){	
 		    	  preparedStatement = connection.prepareStatement("SELECT COUNT(index) AS i FROM " + getTable() + " WHERE nickname != 'SYSTEM';");
 		    	  ResultSet scarfsCountResult = preparedStatement.executeQuery();
 					

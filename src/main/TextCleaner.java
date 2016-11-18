@@ -30,5 +30,10 @@ public class TextCleaner {
     }
     return(filtered.toString());
   }
-  
+  public static String prepareForPosting(String input, int maxlen) {
+	  String temp = filter(input);
+	  return temp.substring(0, Math.min(maxlen, temp.length()));
+  }
+	    
+	  
 }

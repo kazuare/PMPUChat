@@ -31,7 +31,7 @@ public class UnapprovedManager extends Manager{
 	private int lastAdded;
 	@Override
 	public String getTable() {
-        return "unapproved";
+        return "unapproved_posts";
     }
 	//this checks for mod priveleges, actually
 	@Override	
@@ -156,14 +156,9 @@ public class UnapprovedManager extends Manager{
 			    output.print("</html>");
 			    HttpSession session = request.getSession(true);
 			    session.setAttribute("nickname", name);
-			    if(!contacts.equals("")){
+			    if(!contacts.equals(""))
 			    	session.setAttribute("contacts", contacts);
-			    	String messageHead = name.substring(0, Math.min(39, name.length()));
-			    	messageHead += " (" + contacts.substring(0, Math.min(39, contacts.length())) + ")";
-			    	postMessage(messageHead, message, path);
-			    }else{
-			    	postMessage(name, message, path);
-			    }
+			    postMessage(name, contacts, message, path);
 		    }
 		    
 		    output.close();
@@ -187,6 +182,7 @@ public class UnapprovedManager extends Manager{
 						    	  pic = "";
 						      
 							  request.setAttribute("nickname", message.getString("nickname"));
+							  request.setAttribute("contacts", message.getString("contacts"));
 							  request.setAttribute("time", strTime);
 							  request.setAttribute("message", message.getString("message"));
 							  request.setAttribute("picture", pic);

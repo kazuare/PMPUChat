@@ -22,7 +22,7 @@ import javax.servlet.http.Part;
 public class ApprovedManager extends Manager{
 	@Override
 	public String getTable() {
-        return "messages";
+        return "approved_posts";
     }
 	@Override
 	public boolean getPermissionToPost(HttpServletRequest request) {
@@ -31,7 +31,7 @@ public class ApprovedManager extends Manager{
 			return true;
 		return false;
     }
-	public void postApprovedMessage(String username, String message, String path, String time){
+	public void postApprovedMessage(String username, String contacts, String message, String path, String time){
 		  super.lastAdded += 1;
 		  super.totalScarfs += 1;
 	  	  
@@ -39,18 +39,13 @@ public class ApprovedManager extends Manager{
 		  try {
 		      //connection.setAutoCommit(false);
 		      pstmt = connection.prepareStatement(
-		    		  "INSERT INTO " + getTable() + "(index,nickname,message,picture,time) VALUES (" 
+		    		  "INSERT INTO " + getTable() + "(index,nickname,contacts,message,picture,time) VALUES (" 
 		    		  + lastAdded + ", "
-		    		  + "?, ?, ?, '" + time + ":00');");
-		      pstmt.setString(1, 
-		    		  username
-		    		  );
-		      pstmt.setString(2, 
-		    		  message
-		    		  );
-		      pstmt.setString(3, 
-		    		  path
-		    		  );
+		    		  + "?, ?, ?, ?, '" + time + ":00');");
+		      pstmt.setString(1, username );
+		      pstmt.setString(2, contacts );
+		      pstmt.setString(3, message  );
+		      pstmt.setString(4, path );
 		      pstmt.executeUpdate();
 	
 		      pstmt.close();
@@ -68,6 +63,7 @@ public class ApprovedManager extends Manager{
 			response.setCharacterEncoding("UTF-8");
 			
 			String name = (String) request.getAttribute("nickname");
+			String contacts = (String) request.getAttribute("contacts");
 			String message = (String) request.getAttribute("message");
 			String file = (String) request.getAttribute("picture");
 			String time = (String) request.getAttribute("time");
@@ -78,7 +74,7 @@ public class ApprovedManager extends Manager{
 			
 			Files.deleteIfExists(Paths.get(path));
 			Files.move(source, source.resolveSibling(path));
-			postApprovedMessage(name, message, path, time);
+			postApprovedMessage(name, contacts, message, path, time);
 		}catch(Exception e){
 			postSystemMessage(e.toString());
 		}
