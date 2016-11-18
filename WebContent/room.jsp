@@ -170,9 +170,9 @@ $(document).ready(function(){
 				refresh(lastId);	
 				console.log("messages refresh");
 			}, 1000,lastId);},
-		  error: function() {
+		  error: function(lastId) {
 				console.log("refresh error");
-				refresh();	
+				refresh(lastId);	
 		  }
 		
 		});

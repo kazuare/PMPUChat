@@ -27,11 +27,14 @@ import javax.servlet.http.Part;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 
-
+//запоминание имени и контактов через кукисы
+//логирование ошибок
+//окно "посмотреть все записи пользователя"
+//прекратить каждый раз пересоздавать подготовленные запросы
 public abstract class Manager extends HttpServlet {
-	private int lastAdded;
+	protected int lastAdded;
 	protected Connection connection;
-	private int totalScarfs = 0;
+	protected int totalScarfs = 0;
 	
 	public String getTable() {
         return null;
@@ -43,7 +46,9 @@ public abstract class Manager extends HttpServlet {
         return true;
     }
 	
-	private final int chatLength = 15;
+	public int getChatLength(){
+		return 15;
+	}
 	
 	public static boolean isPosInt(String str)
 	  {
@@ -67,7 +72,7 @@ public abstract class Manager extends HttpServlet {
 	  	  
 		  PreparedStatement pstmt;
 		  try {
-		      connection.setAutoCommit(false);
+		      //connection.setAutoCommit(false);
 		      pstmt = connection.prepareStatement(
 		    		  "INSERT INTO " + getTable() + "(index,nickname,message,picture,time) VALUES (" 
 		    		  + lastAdded + ", "
@@ -84,7 +89,6 @@ public abstract class Manager extends HttpServlet {
 		    		  );
 		      pstmt.executeUpdate();
 		
-		      connection.commit();
 		      pstmt.close();
 		
 		    } catch(Exception e){
@@ -96,10 +100,34 @@ public abstract class Manager extends HttpServlet {
 	  public void postSystemMessage(String message){
 		  postMessage("SYSTEM", message, "SYSTEM");
 	  }
+	  public boolean thereArePosts(){
+		  try{
+			  PreparedStatement preparedStatement = connection.prepareStatement("SELECT EXISTS( SELECT 1 FROM " + getTable() + " ) AS bool;");
+			  ResultSet v = preparedStatement.executeQuery();
+			  if(v.next()){
+				  return v.getBoolean("bool");
+			  }
+			  preparedStatement.close();
+		  } catch (Exception e) {
+				postSystemMessage(e.getMessage());		
+		  }
+		  return false;
+	  }
+	  public int getTheOldestMessageIndex(){
+		  try{
+			  PreparedStatement preparedStatement = connection.prepareStatement("SELECT MIN(index) AS i FROM  " + getTable() + ";");
+			  ResultSet v = preparedStatement.executeQuery();
+			  if(v.next()){
+				  return v.getInt("i");
+			  }
+			  preparedStatement.close();
+		  } catch (Exception e) {
+				postSystemMessage(e.getMessage());		
+		  }
+		  return 0;
+	  }
 	  public String retrieveMessage(int index){
 		  try{
-			  if(index > lastAdded)
-				  throw new Exception("index is greater than index of the last added!");
 			  PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + getTable() + " where index = ?;");
 			  preparedStatement.setInt(1, index);
 		
@@ -119,8 +147,7 @@ public abstract class Manager extends HttpServlet {
 					"</p>" + message.getString("message") + 
 					"<br>" + pic;    	  
 			  }
-		  } catch (Exception e) {
-				postSystemMessage(e.getMessage());		
+		  } catch (Exception e) {	
 				return e.getMessage();
 		  }
 		  return "error - no 'next' in message retriever";
@@ -161,6 +188,7 @@ public abstract class Manager extends HttpServlet {
 			      while (scarfsCountResult.next()) {
 				  	  totalScarfs = scarfsCountResult.getInt("i");	    	  
 		          }
+			      preparedStatement.close();
 		      }
 		
 		} catch (Exception e) {
@@ -201,7 +229,7 @@ public abstract class Manager extends HttpServlet {
 		    	//serving messages between the most actual one on the server and the last message that client has acquired
 		    	//--not working for some reason,commented--if(isPosInt(refreshFrom)||refreshFrom.substring(0,2).equals("-1")){
 		    		out.print(lastAdded + "#" + totalScarfs + "%");
-		    		int destination = Math.max(Integer.parseInt(refreshFrom),lastAdded - chatLength);
+		    		int destination = Math.max(Integer.parseInt(refreshFrom),lastAdded - getChatLength());
 			    	for(int i = lastAdded; i > destination; i--)
 			    		out.print("<div class='msg'>" + retrieveMessage(i) + "</div>");
 			    	
@@ -223,80 +251,5 @@ public abstract class Manager extends HttpServlet {
 	  }
 	  }
 	  
-	  //adds message to the database
-	  @Override
-	  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	  if(getPermissionToPost(request)){	  	
-		    //encoding stuff. must be written in the beginning of every servlet do method
-			request.setCharacterEncoding("UTF-8");
-			response.setCharacterEncoding("UTF-8");
-		  
-			response.setContentType("text/html");
-			
-		    PrintWriter output = response.getWriter();
-		    
-		    String name = request.getParameter("name"); 
-		    String message = request.getParameter("message");
-		    String contacts = request.getParameter("contacts"); 
-		    Part filePart = request.getPart("file"); 
-		    
-		    String type = "invalid";
-		    
-		    if(name.equals("")){
-		    	output.print("Не заполнено поле 'имя'.");
-		    	output.print("<br>");
-			    output.print("<a href='form.jsp'>Попробовать еще раз</a>");
-		    }else if (name.toLowerCase().contains("system")){
-		    	output.print("Запрещено использовать ключевое слово system в имени.");
-		    	output.print("<br>");
-			    output.print("<a href='form.jsp'>Попробовать еще раз</a>");
-		    }else if (message.equals("")){
-		    	output.print("Пожалуйста, черкните пару слов в графе 'Сообщение'!");
-		    	output.print("<br>");
-			    output.print("<a href='form.jsp'>Попробовать еще раз</a>");
-		    }else if (filePart.getSize() > 1024 * 1024 * 16) {
-		    	output.print("Фотография слишком велика.");
-		    	output.print("<br>");
-			    output.print("<a href='form.jsp'>Попробовать еще раз</a>");
-			}else{				
-				if("image/jpeg".equals(filePart.getContentType())){
-					type = ".jpg";
-				}else if ("image/png".equals(filePart.getContentType())){
-					type = ".png";
-				}else{
-					output.print("Пожалуйста, приложите фотографию в формате PNG или JPEG.");
-			    	output.print("<br>");
-				    output.print("<a href='form.jsp'>Попробовать еще раз</a>");
-				}				
-			}
-		    if(!type.equals("invalid") ){
-		    	InputStream fileContent = filePart.getInputStream();
-		    	String path = "/music/photoes/" + (lastAdded+1) + type;
-		    	
-		    	new File(path).delete();
-		    	
-			    OutputStream out = new FileOutputStream(path); 
-			    IOUtils.copy(fileContent,out);
-			    fileContent.close();
-			    out.close();
-			    output.print("<html>");
-			    output.print("<body>");
-			    output.print("Спасибо. Ваш пост будет рассмотрен модератором в ближайшее время!");
-			    output.print("<br>");
-			    output.print("<a href='form.jsp'>Нажмите, чтобы запостить еще одну вещь</a>");
-			    output.print("</body>");
-			    output.print("</html>");
-			    if(!contacts.equals("")){
-			    	String messageHead = name.substring(0, Math.min(39, name.length()));
-			    	messageHead += " (" + contacts.substring(0, Math.min(39, contacts.length())) + ")";
-			    	postMessage(messageHead, message, path);
-			    }else{
-			    	postMessage(name, message, path);
-			    }
-		    }
-		    
-		    output.close();
-		}
-	    }
 	
 }

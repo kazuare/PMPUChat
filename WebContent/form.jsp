@@ -16,11 +16,13 @@ function showProgressMessage(){
 </head>
 <body>
 
-<form action="Manager" method="post" id="postForm" enctype="multipart/form-data">
+<form action="ToApprove" method="post" id="postForm" enctype="multipart/form-data">
 	Имя:<br>
-    <input type="text" name="name" /><br>    
+    <input type="text" name="name" <%= 	( session.getAttribute( "nickname" ) != null ) ? 
+		"value='"+ session.getAttribute( "nickname" ) +"' ":	" " %>/><br>    
     Контактные данные (не обязательно):<br>
-    <input type="text" name="contacts" /><br>
+    <input type="text" name="contacts" <%= 	( session.getAttribute( "contacts" ) != null ) ? 
+		"value='"+ session.getAttribute( "contacts" ) +"' ":	" " %> /><br>
     Фото связанной вещи в формате jpg или png:<br>
     <input type="file" name="file" /><br>
     Сообщение:<br>
