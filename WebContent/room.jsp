@@ -32,9 +32,7 @@ body {
     font-size: medium;
     
     background: url(/music/back.jpg);
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    background-size: 100% 100%;
+    background-repeat: repeat;
 }
 #main {
     width:60%;
