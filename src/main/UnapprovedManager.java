@@ -29,6 +29,11 @@ import org.apache.tomcat.util.http.fileupload.IOUtils;
 @MultipartConfig
 public class UnapprovedManager extends Manager{
 	private int lastAdded;
+	protected int linkAdditionNumber = 0;
+	@Override
+	public String getImageLinkAddition(){
+		return "?" + linkAdditionNumber;
+	}
 	@Override
 	public String getTable() {
         return "unapproved_posts";
@@ -165,6 +170,9 @@ public class UnapprovedManager extends Manager{
 		}else{
 			HttpSession session = request.getSession(true);
 			if(session.getAttribute( "mod" ) !=null){
+				  linkAdditionNumber++;
+				  if(linkAdditionNumber>999999999)
+					  linkAdditionNumber = 0;
 				  try{
 					  int index = getTheOldestMessageIndex();
 					  PreparedStatement preparedStatement;

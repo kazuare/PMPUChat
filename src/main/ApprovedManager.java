@@ -25,6 +25,10 @@ public class ApprovedManager extends Manager{
         return "approved_posts";
     }
 	@Override
+	public String getImageLinkAddition(){
+		return "?" + Math.floor(Math.random()*6000);
+	}
+	@Override
 	public boolean getPermissionToPost(HttpServletRequest request) {
 		HttpSession session = request.getSession(true);
 		if(session.getAttribute( "mod" ) !=null)

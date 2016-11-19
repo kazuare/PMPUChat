@@ -35,6 +35,9 @@ public abstract class Manager extends HttpServlet {
 	public String getTable() {
         return null;
     }
+	public String getImageLinkAddition(){
+		return "";
+	}
 	public boolean getPermissionToPost(HttpServletRequest request) {
         return true;
     }
@@ -129,10 +132,10 @@ public abstract class Manager extends HttpServlet {
 			      String strTime = timeFormat.format(message.getTimestamp("time"));
 			      String pic = message.getString("picture");
 			      if(!pic.equals("SYSTEM")){
-			    	  pic = "<br/><img src='" + pic/* + "?" + Math.floor(Math.random()*6000)*/ + "'/>";
+			    	  pic = "<br/><img src='" + pic + getImageLinkAddition() + "'/>";
 			      }else{
 			    	  pic = "";
-			      }
+			      }  
 			      String contacts = message.getString("contacts");
 			      if(!contacts.equals(""))
 			    	  contacts = " (" + contacts + ")";
