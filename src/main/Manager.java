@@ -27,10 +27,6 @@ import javax.servlet.http.Part;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 
-//запоминание имени и контактов через кукисы
-//логирование ошибок
-//окно "посмотреть все записи пользователя"
-//прекратить каждый раз пересоздавать подготовленные запросы
 public abstract class Manager extends HttpServlet {
 	protected int lastAdded;
 	protected Connection connection;
@@ -133,7 +129,7 @@ public abstract class Manager extends HttpServlet {
 			      String strTime = timeFormat.format(message.getTimestamp("time"));
 			      String pic = message.getString("picture");
 			      if(!pic.equals("SYSTEM")){
-			    	  pic = "<br/><img src='" + pic + "?" + Math.floor(Math.random()*6000) + "'/>";
+			    	  pic = "<br/><img src='" + pic/* + "?" + Math.floor(Math.random()*6000)*/ + "'/>";
 			      }else{
 			    	  pic = "";
 			      }
