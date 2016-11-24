@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
@@ -25,6 +23,7 @@ import javax.servlet.http.Part;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 
+@SuppressWarnings("serial")
 @WebServlet("/ToApprove")
 @MultipartConfig
 public class UnapprovedManager extends Manager{
@@ -59,10 +58,6 @@ public class UnapprovedManager extends Manager{
 		try {
 			  cxt = new InitialContext();
 		
-			  if ( cxt == null ) {
-			     throw new Exception("Uh oh -- no context!");
-			  }
-		
 			  ds = (DataSource) cxt.lookup( "java:/comp/env/jdbc/postgres" );
 		
 			  if ( ds == null ) {
@@ -72,8 +67,7 @@ public class UnapprovedManager extends Manager{
 				      
 			  
 		} catch (Exception e) {
-			postSystemMessage("DB ERROR");
-			postSystemMessage(e.getMessage());		
+			logFatalError(getTable() + "-" + e.getMessage());		
 		}
 	  } 
 	
@@ -98,7 +92,7 @@ public class UnapprovedManager extends Manager{
 	
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	if(getPermissionToPost(request)){	  
+	if(getPermissionToPost(request)){
 		request.setCharacterEncoding("UTF-8");
 		response.setCharacterEncoding("UTF-8");
 		String del = request.getParameter("del");
@@ -209,9 +203,7 @@ public class UnapprovedManager extends Manager{
 					  }
 					  
 				  } catch (Exception e) {
-					  RequestDispatcher rd = request.getRequestDispatcher("/Manager");
-					  request.setAttribute("message", e.toString());
-					  rd.forward(request,response);
+					  logFatalError(getTable() + "-" + e.getMessage());	
 				  }		
 			}				
 		}

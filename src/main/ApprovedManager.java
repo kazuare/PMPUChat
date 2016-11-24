@@ -1,22 +1,18 @@
 package main;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.PreparedStatement;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
 
+@SuppressWarnings("serial")
 @WebServlet("/Manager")
 @MultipartConfig
 public class ApprovedManager extends Manager{
@@ -54,8 +50,7 @@ public class ApprovedManager extends Manager{
 	
 		      pstmt.close();
 		    } catch(Exception e){
-		    	postSystemMessage("DB ERROR");
-		    	postSystemMessage(e.getMessage());
+		    	logFatalError(getTable() + "-" + e.getMessage());	
 		    }
 	  	  
 	  }
@@ -80,7 +75,7 @@ public class ApprovedManager extends Manager{
 			Files.move(source, source.resolveSibling(path));
 			postApprovedMessage(name, contacts, message, path, time);
 		}catch(Exception e){
-			postSystemMessage(e.toString());
+			logFatalError(getTable() + "-" + e.getMessage());	
 		}
 	}
 	}

@@ -1,8 +1,6 @@
 package main;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Vector;
 
 import javax.servlet.*;
@@ -12,8 +10,9 @@ import javax.servlet.http.*;
 import javafx.util.Pair;
 
 
+@SuppressWarnings("serial")
 @WebServlet("/Autorizator")
-public class Autorizator extends HttpServlet  {
+public class Autorizator extends ServletWithLogging  {
   Vector<Pair<String,String>> mods;
 
   @Override
@@ -29,15 +28,14 @@ public class Autorizator extends HttpServlet  {
 		while ((line = br.readLine()) != null) {
 			int breakIndex = line.indexOf(' ');
 			mods.add(
-					new Pair(
+					new Pair<String, String>(
 							line.substring(0, breakIndex),
 							line.substring(breakIndex + 1)
 							)
 					);
 		}
 	} catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+		logFatalError("Autorizator - " + e.getMessage());
 	} 
 	
 	  

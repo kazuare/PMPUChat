@@ -1,7 +1,6 @@
 package main;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,15 +10,15 @@ import java.text.SimpleDateFormat;
 import javax.naming.InitialContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.tomcat.jdbc.pool.DataSource;
 
+@SuppressWarnings("serial")
 @WebServlet("/LoadXML")
-public class LoadXML extends HttpServlet{	
+public class LoadXML extends ServletWithLogging{	
 	
 	public boolean getPermissionToGet(HttpServletRequest request) {
 		HttpSession session = request.getSession(true);
@@ -38,10 +37,6 @@ public class LoadXML extends HttpServlet{
 		Connection connection;
 		try {
 			  cxt = new InitialContext();
-		
-			  if ( cxt == null ) {
-			     throw new Exception("Uh oh -- no context!");
-			  }
 		
 			  ds = (DataSource) cxt.lookup( "java:/comp/env/jdbc/postgres" );
 		
@@ -136,7 +131,9 @@ public class LoadXML extends HttpServlet{
 		      
 		      out.flush();
 		      
-		} catch (Exception e) {}    
+		} catch (Exception e) {
+			logFatalError("XML" + "-" + e.getMessage());	
+		}    
 	}
 	}
 }

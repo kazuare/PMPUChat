@@ -1,37 +1,27 @@
 package main;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.naming.InitialContext;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
-
 import org.apache.tomcat.jdbc.pool.DataSource;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 
-public abstract class Manager extends HttpServlet {
+@SuppressWarnings("serial")
+public abstract class Manager extends ServletWithLogging {
 	protected int lastAdded;
 	protected Connection connection;
 	protected int totalScarfs = 0;
-	
+	protected PreparedStatement insertStatement;
 	public String getTable() {
         return null;
     }
@@ -59,35 +49,30 @@ public abstract class Manager extends HttpServlet {
 	  }
 	
 	public void postMessage(String username, String contacts, String message, String path){
-		  SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-	  	  //need to add long for timezone fixing
-	      String strTime = timeFormat.format(new Date().getTime() + 7L * 60L * 60L * 1000L);
-	      
 	      synchronized (this){
 	    	  lastAdded++;
 		  	  if(!username.equals("SYSTEM"))
 		  		  totalScarfs++;
 	      }
 	  	  
-		  PreparedStatement pstmt;
+		  
 		  try {
-		      //connection.setAutoCommit(false);
-		      pstmt = connection.prepareStatement(
-		    		  "INSERT INTO " + getTable() + "(index,nickname,contacts,message,picture,time) VALUES (" 
-		    		  + lastAdded + ", "
-		    		  + "?, ?, ?, ?, " 
-		    		  + "'" + strTime + ":00');");
-		      pstmt.setString(1, TextCleaner.prepareForPosting(username, 100) );
-		      pstmt.setString(2, TextCleaner.prepareForPosting(contacts, 100) );
-		      pstmt.setString(3, TextCleaner.prepareForPosting(message, 1000) );
-		      pstmt.setString(4, path );
-		      pstmt.executeUpdate();
-		
-		      pstmt.close();
+			  PreparedStatement insertStatement = connection.prepareStatement(
+		    		  "INSERT INTO " + getTable() + "(index,nickname,contacts,message,picture,time) "
+			    		  		+ "VALUES (?, ?, ?, ?, ?, ?);"
+		    				  );
+		      insertStatement.setInt(1, lastAdded);
+		      insertStatement.setString(2, TextCleaner.prepareForPosting(username, 100) );
+		      insertStatement.setString(3, TextCleaner.prepareForPosting(contacts, 100) );
+		      insertStatement.setString(4, TextCleaner.prepareForPosting(message, 1000) );
+		      insertStatement.setString(5, path );
+		      Timestamp t = new java.sql.Timestamp(new Date().getTime() + 8L * 60L * 60L * 1000L);
+		      insertStatement.setTimestamp(6, t);
+		      insertStatement.executeUpdate();
+		      insertStatement.close();//?
 		
 		    } catch(Exception e){
-		    	postSystemMessage("DB ERROR");
-		    	postSystemMessage(e.getMessage());
+		    	logFatalError(getTable() + "-" + e.getMessage());
 		    }
 	  	  
 	  }
@@ -103,7 +88,7 @@ public abstract class Manager extends HttpServlet {
 			  }
 			  preparedStatement.close();
 		  } catch (Exception e) {
-				postSystemMessage(e.getMessage());		
+			  logFatalError(getTable() + "-" + e.getMessage());		
 		  }
 		  return false;
 	  }
@@ -116,7 +101,7 @@ public abstract class Manager extends HttpServlet {
 			  }
 			  preparedStatement.close();
 		  } catch (Exception e) {
-				postSystemMessage(e.getMessage());		
+			  logFatalError(getTable() + "-" + e.getMessage());	
 		  }
 		  return 0;
 	  }
@@ -145,7 +130,7 @@ public abstract class Manager extends HttpServlet {
 					"<br>" + pic;    	  
 			  }
 		  } catch (Exception e) {	
-				return e.getMessage();
+			  logFatalError(getTable() + "-" + e.getMessage());	
 		  }
 		  return "error - no 'next' in message retriever";
 	  }
@@ -155,11 +140,7 @@ public abstract class Manager extends HttpServlet {
 		DataSource ds;
 		try {
 			  cxt = new InitialContext();
-		
-			  if ( cxt == null ) {
-			     throw new Exception("Uh oh -- no context!");
-			  }
-		
+				
 			  ds = (DataSource) cxt.lookup( "java:/comp/env/jdbc/postgres" );
 		
 			  if ( ds == null ) {
@@ -167,7 +148,12 @@ public abstract class Manager extends HttpServlet {
 			  }
 			  connection = ds.getConnection("PMPU","korovkin");
 		
-		
+			  /*
+			  insertStatement = connection.prepareStatement(
+		    		  "INSERT INTO " + getTable() + "(index,nickname,contacts,message,picture,time) "
+			    		  		+ "VALUES (?, ?, ?, ?, ?, ?);"
+		    				  );
+			  */
 			  PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(index) AS i FROM " + getTable() + ";");
 
 			  ResultSet initialMessages = preparedStatement.executeQuery();
@@ -187,8 +173,7 @@ public abstract class Manager extends HttpServlet {
 		      }
 		
 		} catch (Exception e) {
-			postSystemMessage("DB ERROR");
-			postSystemMessage(e.getMessage());		
+			logFatalError(getTable() + "-" + e.getMessage());			
 		}
 	  } 
 	  
@@ -197,7 +182,9 @@ public abstract class Manager extends HttpServlet {
 		  if (connection != null)
 			try {
 				connection.close();
-			} catch (SQLException e) {}
+			} catch (SQLException e) {
+				logFatalError(getTable() + "-" + e.getMessage());	
+			}
 	  }
 	  //retrieves message from database
 	  @Override

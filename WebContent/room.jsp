@@ -64,7 +64,8 @@ body {
     border-width: 1px;
 }
 #total {
-	color: #FFFFFF;
+	color: black;
+	background-color:white;
 }
 h1 {
     text-align:center;

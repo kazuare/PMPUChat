@@ -1,7 +1,5 @@
 package main;
 
-import javax.servlet.http.*;
-
 public class TextCleaner {
 
   public static String filter(String input) {
