@@ -13,7 +13,7 @@ import javafx.util.Pair;
 @SuppressWarnings("serial")
 @WebServlet("/Autorizator")
 public class Autorizator extends ServletWithLogging  {
-  Vector<Pair<String,String>> mods;
+  private Vector<Pair<String,String>> mods;
 
   @Override
   public void init(){

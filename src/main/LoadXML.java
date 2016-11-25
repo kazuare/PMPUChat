@@ -22,9 +22,8 @@ public class LoadXML extends ServletWithLogging{
 	
 	public boolean getPermissionToGet(HttpServletRequest request) {
 		HttpSession session = request.getSession(true);
-		if(session.getAttribute( "mod" ) !=null)
-			return true;
-		return false;
+		
+		return session.getAttribute( "mod" ) != null;
     }
 	
 	@Override

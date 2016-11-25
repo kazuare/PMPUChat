@@ -111,7 +111,7 @@ public class UnapprovedManager extends Manager{
 		    
 		    String type = "invalid";
 		    
-		    if(name.equals("")){
+		    if("".equals(name)){
 		    	output.print("Не заполнено поле 'имя'.");
 		    	output.print("<br>");
 			    output.print("<a href='form.jsp'>Попробовать еще раз</a>");
@@ -119,7 +119,7 @@ public class UnapprovedManager extends Manager{
 		    	output.print("Запрещено использовать ключевое слово system в имени.");
 		    	output.print("<br>");
 			    output.print("<a href='form.jsp'>Попробовать еще раз</a>");
-		    }else if (message.equals("")){
+		    }else if ("".equals(message)){
 		    	output.print("Пожалуйста, черкните пару слов в графе 'Сообщение'!");
 		    	output.print("<br>");
 			    output.print("<a href='form.jsp'>Попробовать еще раз</a>");
@@ -172,7 +172,6 @@ public class UnapprovedManager extends Manager{
 					  linkAdditionNumber = 0;
 				  try{
 					  int index = getTheOldestMessageIndex();
-					  PreparedStatement preparedStatement;
 					  if(del.equals("accept")){
 						  messageRetrieveStatement.setInt(1, index);
 					
@@ -180,7 +179,7 @@ public class UnapprovedManager extends Manager{
 						 	  
 						  if(message.next()){
 						      String pic = message.getString("picture");
-						      if(pic.equals("SYSTEM"))
+						      if("SYSTEM".equals(pic))
 						    	  pic = "";
 						      
 							  request.setAttribute("nickname", message.getString("nickname"));
@@ -195,7 +194,7 @@ public class UnapprovedManager extends Manager{
 					  messageDeleteStatement.setInt(1, index);				
 					  messageDeleteStatement.executeUpdate();
 					  
-					  if(del.equals("accept")){
+					  if("accept".equals(del)){
 						  RequestDispatcher rd = request.getRequestDispatcher("/Manager");
 						  rd.forward(request,response);
 					  }

@@ -104,7 +104,7 @@ public abstract class Manager extends ServletWithLogging {
 	public void postMessage(String username, String contacts, String message, String path){
 	      synchronized (this){
 	    	  lastAdded++;
-		  	  if(!username.equals("SYSTEM"))
+		  	  if(!"SYSTEM".equals(username))
 		  		  totalScarfs++;
 	      }
 	  	  
@@ -115,7 +115,7 @@ public abstract class Manager extends ServletWithLogging {
 		      insertStatement.setString(3, TextCleaner.prepareForPosting(contacts, 100) );
 		      insertStatement.setString(4, TextCleaner.prepareForPosting(message, 1000) );
 		      insertStatement.setString(5, path );
-		      Timestamp t = new java.sql.Timestamp(new Date().getTime() + 8L * 60L * 60L * 1000L);
+		      Timestamp t = new Timestamp(new Date().getTime() + 8L * 60L * 60L * 1000L);
 		      insertStatement.setTimestamp(6, t);
 		      insertStatement.executeUpdate();
 		      
@@ -158,7 +158,7 @@ public abstract class Manager extends ServletWithLogging {
 			  if(message.next()){
 			      String strTime = timeFormat.format(message.getTimestamp("time"));
 			      String pic = message.getString("picture");
-			      if(!pic.equals("SYSTEM")){
+			      if(!"SYSTEM".equals(pic)){
 			    	  pic = "<br/><img src='" + pic + getImageLinkAddition() + "'/>";
 			      }else{
 			    	  pic = "";

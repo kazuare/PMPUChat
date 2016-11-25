@@ -28,9 +28,8 @@ public class ApprovedManager extends Manager{
 	@Override
 	public boolean getPermissionToPost(HttpServletRequest request) {
 		HttpSession session = request.getSession(true);
-		if(session.getAttribute( "mod" ) !=null)
-			return true;
-		return false;
+		
+		return session.getAttribute( "mod" ) != null;
     }
 	public void postApprovedMessage(String username, String contacts, String message, String path, Timestamp time){
 		  super.lastAdded += 1;
