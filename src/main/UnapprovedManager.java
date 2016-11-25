@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import javax.naming.InitialContext;
@@ -41,9 +40,8 @@ public class UnapprovedManager extends Manager{
 	@Override	
 	public boolean getPermissionToGet(HttpServletRequest request) {
 		HttpSession session = request.getSession(true);
-		if(session.getAttribute( "mod" ) !=null)
-			return true;
-		return false;
+		
+		return session.getAttribute( "mod" ) !=null;
     }
 	
 	@Override
@@ -53,7 +51,7 @@ public class UnapprovedManager extends Manager{
 	
 	@Override
 	  public void init(){
-		servletStartRandomDouble= Math.random();
+		servletStartRandomDouble = Math.random();
 		
 		InitialContext cxt;
 		DataSource ds;
@@ -65,6 +63,7 @@ public class UnapprovedManager extends Manager{
 			  if ( ds == null ) {
 			     throw new Exception("Data source not found!");
 			  }
+			  
 			  connection = ds.getConnection("PMPU","korovkin");
 			  
 			  prepareStatements();
