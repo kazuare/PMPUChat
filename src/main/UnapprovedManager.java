@@ -8,7 +8,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.text.SimpleDateFormat;
 
 import javax.naming.InitialContext;
 import javax.servlet.RequestDispatcher;
@@ -29,15 +28,16 @@ import org.apache.tomcat.util.http.fileupload.IOUtils;
 public class UnapprovedManager extends Manager{
 	private int lastAdded;
 	protected int linkAdditionNumber = 0;
+	protected double servletStartRandomDouble = 0;
 	@Override
 	public String getImageLinkAddition(){
-		return "?" + linkAdditionNumber;
+		return "?" + linkAdditionNumber + servletStartRandomDouble;
 	}
 	@Override
 	public String getTable() {
         return "unapproved_posts";
     }
-	//this checks for mod priveleges, actually
+	//this checks for mod privileges, actually
 	@Override	
 	public boolean getPermissionToGet(HttpServletRequest request) {
 		HttpSession session = request.getSession(true);
@@ -53,6 +53,8 @@ public class UnapprovedManager extends Manager{
 	
 	@Override
 	  public void init(){
+		servletStartRandomDouble= Math.random();
+		
 		InitialContext cxt;
 		DataSource ds;
 		try {
@@ -64,7 +66,8 @@ public class UnapprovedManager extends Manager{
 			     throw new Exception("Data source not found!");
 			  }
 			  connection = ds.getConnection("PMPU","korovkin");
-				      
+			  
+			  prepareStatements();
 			  
 		} catch (Exception e) {
 			logFatalError(getTable() + "-" + e.getMessage());		
@@ -171,32 +174,27 @@ public class UnapprovedManager extends Manager{
 					  int index = getTheOldestMessageIndex();
 					  PreparedStatement preparedStatement;
 					  if(del.equals("accept")){
-						  preparedStatement = connection.prepareStatement("SELECT * FROM " + getTable() + " where index = ?;");
-						  preparedStatement.setInt(1, index);
+						  messageRetrieveStatement.setInt(1, index);
 					
-						  ResultSet message = preparedStatement.executeQuery();
-						
-						  SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");  	  
+						  ResultSet message = messageRetrieveStatement.executeQuery();
+						 	  
 						  if(message.next()){
-						      String strTime = timeFormat.format(message.getTimestamp("time"));
 						      String pic = message.getString("picture");
 						      if(pic.equals("SYSTEM"))
 						    	  pic = "";
 						      
 							  request.setAttribute("nickname", message.getString("nickname"));
 							  request.setAttribute("contacts", message.getString("contacts"));
-							  request.setAttribute("time", strTime);
+							  request.setAttribute("time", message.getTimestamp("time"));
 							  request.setAttribute("message", message.getString("message"));
 							  request.setAttribute("picture", pic);
 						  }
 						      
 					  }
 						  
-					  preparedStatement = connection.prepareStatement("DELETE FROM " + getTable() + " WHERE index = ?;");
-					  preparedStatement.setInt(1, index);
-				
-					  preparedStatement.executeUpdate();
-					  preparedStatement.close();
+					  messageDeleteStatement.setInt(1, index);				
+					  messageDeleteStatement.executeUpdate();
+					  
 					  if(del.equals("accept")){
 						  RequestDispatcher rd = request.getRequestDispatcher("/Manager");
 						  rd.forward(request,response);

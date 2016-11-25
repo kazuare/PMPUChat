@@ -22,9 +22,14 @@ public abstract class Manager extends ServletWithLogging {
 	protected Connection connection;
 	protected int totalScarfs = 0;
 	protected PreparedStatement insertStatement;
+	protected PreparedStatement oldestMessageStatement;
+	protected PreparedStatement messageRetrieveStatement;
+	protected PreparedStatement postCheckStatement;
+	protected PreparedStatement messageDeleteStatement;
 	public String getTable() {
         return null;
     }
+	//protects pics from browser caching
 	public String getImageLinkAddition(){
 		return "";
 	}
@@ -47,7 +52,55 @@ public abstract class Manager extends ServletWithLogging {
 	      }
 	      return true;
 	  }
-	
+	@Override
+	  public void init(){
+		InitialContext cxt;
+		DataSource ds;
+		try {
+			  cxt = new InitialContext();
+				
+			  ds = (DataSource) cxt.lookup( "java:/comp/env/jdbc/postgres" );
+		
+			  if ( ds == null ) {
+			     throw new Exception("Data source not found!");
+			  }
+			  connection = ds.getConnection("PMPU","korovkin");
+		
+			  prepareStatements();
+			  
+			  //executed only once
+			  PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(index) AS i FROM " + getTable() + ";");
+			  ResultSet initialMessages = preparedStatement.executeQuery();
+			
+		      while (initialMessages.next()) {
+			  	  lastAdded = initialMessages.getInt("i") - 1;	    	  
+	          }
+		      
+		      if(lastAdded != -1){	
+		    	  //executed only once
+		    	  preparedStatement = connection.prepareStatement("SELECT COUNT(index) AS i FROM " + getTable() + " WHERE nickname != 'SYSTEM';");
+		    	  ResultSet scarfsCountResult = preparedStatement.executeQuery();
+					
+			      while (scarfsCountResult.next()) {
+				  	  totalScarfs = scarfsCountResult.getInt("i");	    	  
+		          }
+			      preparedStatement.close();
+		      }
+		
+		} catch (Exception e) {
+			logFatalError(getTable() + "-" + e.getMessage());			
+		}
+	  } 
+	public void prepareStatements() throws SQLException{
+		insertStatement = connection.prepareStatement(
+	    		  "INSERT INTO " + getTable() + "(index,nickname,contacts,message,picture,time) "
+		    		  		+ "VALUES (?, ?, ?, ?, ?, ?);"
+	    				  );
+		oldestMessageStatement = connection.prepareStatement("SELECT MIN(index) AS i FROM  " + getTable() + ";");
+		postCheckStatement = connection.prepareStatement("SELECT EXISTS( SELECT 1 FROM " + getTable() + " ) AS bool;");
+		messageRetrieveStatement = connection.prepareStatement("SELECT * FROM " + getTable() + " where index = ?;");
+		messageDeleteStatement = connection.prepareStatement("DELETE FROM " + getTable() + " WHERE index = ?;");
+	}
 	public void postMessage(String username, String contacts, String message, String path){
 	      synchronized (this){
 	    	  lastAdded++;
@@ -55,12 +108,8 @@ public abstract class Manager extends ServletWithLogging {
 		  		  totalScarfs++;
 	      }
 	  	  
-		  
+		 
 		  try {
-			  PreparedStatement insertStatement = connection.prepareStatement(
-		    		  "INSERT INTO " + getTable() + "(index,nickname,contacts,message,picture,time) "
-			    		  		+ "VALUES (?, ?, ?, ?, ?, ?);"
-		    				  );
 		      insertStatement.setInt(1, lastAdded);
 		      insertStatement.setString(2, TextCleaner.prepareForPosting(username, 100) );
 		      insertStatement.setString(3, TextCleaner.prepareForPosting(contacts, 100) );
@@ -69,10 +118,9 @@ public abstract class Manager extends ServletWithLogging {
 		      Timestamp t = new java.sql.Timestamp(new Date().getTime() + 8L * 60L * 60L * 1000L);
 		      insertStatement.setTimestamp(6, t);
 		      insertStatement.executeUpdate();
-		      insertStatement.close();//?
-		
+		      
 		    } catch(Exception e){
-		    	logFatalError(getTable() + "-" + e.getMessage());
+		    	logFatalError(getTable() + " - " + e.getMessage());
 		    }
 	  	  
 	  }
@@ -81,12 +129,10 @@ public abstract class Manager extends ServletWithLogging {
 	  }
 	  public boolean thereArePosts(){
 		  try{
-			  PreparedStatement preparedStatement = connection.prepareStatement("SELECT EXISTS( SELECT 1 FROM " + getTable() + " ) AS bool;");
-			  ResultSet v = preparedStatement.executeQuery();
-			  if(v.next()){
+			  ResultSet v = postCheckStatement.executeQuery();
+			  if(v.next())
 				  return v.getBoolean("bool");
-			  }
-			  preparedStatement.close();
+			  
 		  } catch (Exception e) {
 			  logFatalError(getTable() + "-" + e.getMessage());		
 		  }
@@ -94,12 +140,10 @@ public abstract class Manager extends ServletWithLogging {
 	  }
 	  public int getTheOldestMessageIndex(){
 		  try{
-			  PreparedStatement preparedStatement = connection.prepareStatement("SELECT MIN(index) AS i FROM  " + getTable() + ";");
-			  ResultSet v = preparedStatement.executeQuery();
-			  if(v.next()){
+			  ResultSet v = oldestMessageStatement.executeQuery();
+			  if(v.next())
 				  return v.getInt("i");
-			  }
-			  preparedStatement.close();
+			  
 		  } catch (Exception e) {
 			  logFatalError(getTable() + "-" + e.getMessage());	
 		  }
@@ -107,10 +151,8 @@ public abstract class Manager extends ServletWithLogging {
 	  }
 	  public String retrieveMessage(int index){
 		  try{
-			  PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + getTable() + " where index = ?;");
-			  preparedStatement.setInt(1, index);
-		
-			  ResultSet message = preparedStatement.executeQuery();
+			  messageRetrieveStatement.setInt(1, index);		
+			  ResultSet message = messageRetrieveStatement.executeQuery();
 			
 			  SimpleDateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");  	  
 			  if(message.next()){
@@ -134,48 +176,7 @@ public abstract class Manager extends ServletWithLogging {
 		  }
 		  return "error - no 'next' in message retriever";
 	  }
-	  @Override
-	  public void init(){
-		InitialContext cxt;
-		DataSource ds;
-		try {
-			  cxt = new InitialContext();
-				
-			  ds = (DataSource) cxt.lookup( "java:/comp/env/jdbc/postgres" );
-		
-			  if ( ds == null ) {
-			     throw new Exception("Data source not found!");
-			  }
-			  connection = ds.getConnection("PMPU","korovkin");
-		
-			  /*
-			  insertStatement = connection.prepareStatement(
-		    		  "INSERT INTO " + getTable() + "(index,nickname,contacts,message,picture,time) "
-			    		  		+ "VALUES (?, ?, ?, ?, ?, ?);"
-		    				  );
-			  */
-			  PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(index) AS i FROM " + getTable() + ";");
-
-			  ResultSet initialMessages = preparedStatement.executeQuery();
-			
-		      while (initialMessages.next()) {
-			  	  lastAdded = initialMessages.getInt("i") - 1;	    	  
-	          }
-		      
-		      if(lastAdded != -1){	
-		    	  preparedStatement = connection.prepareStatement("SELECT COUNT(index) AS i FROM " + getTable() + " WHERE nickname != 'SYSTEM';");
-		    	  ResultSet scarfsCountResult = preparedStatement.executeQuery();
-					
-			      while (scarfsCountResult.next()) {
-				  	  totalScarfs = scarfsCountResult.getInt("i");	    	  
-		          }
-			      preparedStatement.close();
-		      }
-		
-		} catch (Exception e) {
-			logFatalError(getTable() + "-" + e.getMessage());			
-		}
-	  } 
+	  
 	  
 	  @Override
 	  public void destroy() {

@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.PreparedStatement;
+import java.sql.Timestamp;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -31,24 +32,18 @@ public class ApprovedManager extends Manager{
 			return true;
 		return false;
     }
-	public void postApprovedMessage(String username, String contacts, String message, String path, String time){
+	public void postApprovedMessage(String username, String contacts, String message, String path, Timestamp time){
 		  super.lastAdded += 1;
 		  super.totalScarfs += 1;
 	  	  
-		  PreparedStatement pstmt;
 		  try {
-		      //connection.setAutoCommit(false);
-		      pstmt = connection.prepareStatement(
-		    		  "INSERT INTO " + getTable() + "(index,nickname,contacts,message,picture,time) VALUES (" 
-		    		  + lastAdded + ", "
-		    		  + "?, ?, ?, ?, '" + time + ":00');");
-		      pstmt.setString(1, username );
-		      pstmt.setString(2, contacts );
-		      pstmt.setString(3, message  );
-		      pstmt.setString(4, path );
-		      pstmt.executeUpdate();
-	
-		      pstmt.close();
+			  insertStatement.setInt(1, lastAdded);
+		      insertStatement.setString(2, username );
+		      insertStatement.setString(3, contacts );
+		      insertStatement.setString(4, message );
+		      insertStatement.setString(5, path );
+		      insertStatement.setTimestamp(6, time);
+		      insertStatement.executeUpdate();
 		    } catch(Exception e){
 		    	logFatalError(getTable() + "-" + e.getMessage());	
 		    }
@@ -65,7 +60,7 @@ public class ApprovedManager extends Manager{
 			String contacts = (String) request.getAttribute("contacts");
 			String message = (String) request.getAttribute("message");
 			String file = (String) request.getAttribute("picture");
-			String time = (String) request.getAttribute("time");
+			Timestamp time = (Timestamp) request.getAttribute("time");
 			
 			String path = file.replace("un", "");
 			path = path.substring(0, path.indexOf("approved")+"approved".length()) + Integer.toString(lastAdded+1) + path.substring(path.indexOf('.'));
