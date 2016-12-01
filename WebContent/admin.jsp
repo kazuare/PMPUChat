@@ -100,7 +100,7 @@ wbr { display: inline-block; }
 <div onclick="location.href='LoadXML';">&nbsp;Получить все данные в XML-формате&nbsp;</div>
  <div>
 <form action="GetPosts" method="GET"> 
-  Посмотреть все посты пользователя: <input type="text" name="target" > <input type="submit">  
+  Посмотреть все посты пользователя: <input type="text" name="target" > <input type="submit" value="Посмотреть">  
  </form>
 </div>
 
