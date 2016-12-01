@@ -94,9 +94,16 @@ wbr { display: inline-block; }
 <body>
 <div id='main'>
 <div id='greeting'>
+
 <div onclick="location.href='http://80.87.202.12:8080/game/room.jsp?';">&nbsp;На главную&nbsp;</div>
 &nbsp;
 <div onclick="location.href='LoadXML';">&nbsp;Получить все данные в XML-формате&nbsp;</div>
+ <div>
+<form action="GetPosts" method="GET"> 
+  Посмотреть все посты пользователя: <input type="text" name="target" > <input type="submit">  
+ </form>
+</div>
+
 </div>
 <h1 id = 'total'>Панель модерации</h1>
 <div id='bordered'>
