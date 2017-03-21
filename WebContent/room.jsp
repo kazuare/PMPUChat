@@ -12,7 +12,7 @@
       var iFrameID = document.getElementById('idIframe');
       if(iFrameID) {
             iFrameID.height = "";
-            iFrameID.height = iFrameID.contentWindow.document.body.scrollHeight + "px";
+            iFrameID.height = iFrameID.contentWindow.document.body.scrollHeight*1.2 + "px";
          
       }   
   }
@@ -22,6 +22,9 @@
 
 html{
     height: 100%;
+}
+iframe{
+	overflow-x: hidden;
 }
 body {
     background-color: #000000;
@@ -90,7 +93,7 @@ wbr { display: inline-block; }
 <h1 id = 'total'></h1>
 <div id='bordered'>
 <div style="background-color:#d5d9e5;">
- <iframe src="form.jsp" width="100%" frameborder="0" id="idIframe" onload="iframeLoaded()">
+ <iframe src="form.jsp" scrolling="no" width="100%" frameborder="0" id="idIframe" onload="iframeLoaded()">
     Ваш браузер не поддерживает плавающие фреймы(чем вы пользуетесь?...)
  </iframe>
  </div>

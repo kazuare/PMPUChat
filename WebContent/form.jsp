@@ -13,6 +13,11 @@ function showProgressMessage(){
 	message.style.display = 'block';	
 }
 </script>
+<style>
+	textarea {
+	    resize: none;
+	}
+</style>
 </head>
 <body>
 
