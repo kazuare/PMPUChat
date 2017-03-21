@@ -12,7 +12,7 @@
       var iFrameID = document.getElementById('idIframe');
       if(iFrameID) {
             iFrameID.height = "";
-            iFrameID.height = iFrameID.contentWindow.document.body.scrollHeight*1.2 + "px";
+            iFrameID.height = iFrameID.contentWindow.document.body.scrollHeight + "px";
          
       }   
   }
