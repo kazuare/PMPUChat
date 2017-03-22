@@ -122,6 +122,10 @@ public class UnapprovedManager extends Manager{
 		    	output.print("Пожалуйста, черкните пару слов в графе 'Сообщение'!");
 		    	output.print("<br>");
 			    output.print("<a href='form.jsp'>Попробовать еще раз</a>");
+		    }else if (message.length() > 240){
+		    	output.print("Сообщение слишком длинное!");
+		    	output.print("<br>");
+			    output.print("<a href='form.jsp'>Попробовать еще раз</a>");
 		    }else if (filePart.getSize() > 1024 * 1024 * 16) {
 		    	output.print("Фотография слишком велика.");
 		    	output.print("<br>");

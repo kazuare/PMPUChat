@@ -6,7 +6,11 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <script src='http://code.jquery.com/jquery-latest.min.js' type='text/javascript'></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <script type="text/javascript">
   function iframeLoaded() {
       var iFrameID = document.getElementById('idIframe');
@@ -27,15 +31,11 @@ iframe{
 	overflow-x: hidden;
 }
 body {
-    background-color: #000000;
     width:100%;
     height: 100%;
     overflow-x: hidden;
     
     font-size: medium;
-    
-    background: url(/music/back.jpg);
-    background-repeat: repeat;
 }
 #main {
     width:60%;
@@ -66,15 +66,12 @@ body {
     border-style: solid;  
     border-width: 1px;
 }
-#total {
-	color: black;
-	background-color:white;
-}
+
 h1 {
     text-align:center;
 } 
 wbr { display: inline-block; }
-.msg img {
+.well img {
 	max-height: 400px; 
 	max-width: 400px;
 }
@@ -83,6 +80,7 @@ wbr { display: inline-block; }
 <body>
 <div id='main'>
 <div id='greeting'>
+<a href="#"><span class="glyphicon glyphicon-remove-sign"></span><span class="glyphicon glyphicon-ok-sign"></span></a>
 <%= 
 		( session.getAttribute( "mod" ) !=null ) ? 
 		"<div onclick=\"location.href='http://80.87.202.12:8080/game/admin.jsp?';\">&nbsp;Панель модерации&nbsp;</div>":
@@ -90,7 +88,9 @@ wbr { display: inline-block; }
 		"&nbsp;Пароль:&nbsp; <input type='password' name='password'>"+
 		"<input type='submit'></form></div>" 		
 %>.</div>
+<div class='jumbotron'>
 <h1 id = 'total'></h1>
+</div>
 <div id='bordered'>
 <div style="background-color:#d5d9e5;">
  <iframe src="form.jsp" scrolling="no" width="100%" frameborder="0" id="idIframe" onload="iframeLoaded()">

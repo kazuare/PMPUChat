@@ -30,8 +30,8 @@ function showProgressMessage(){
 		"value='"+ session.getAttribute( "contacts" ) +"' ":	" " %> /><br>
     Фото связанной вещи в формате jpg или png:<br>
     <input type="file" name="file" /><br>
-    Сообщение:<br>
-    <textarea rows="10" cols="100" name="message"></textarea><br>
+    Сообщение(до 240 символов):<br>
+    <textarea rows="4" cols="100" name="message"></textarea><br>
     <input type="submit" onclick="showProgressMessage();" />
 </form>
 <div id="message" style="display:none;">Ваш пост загружается....</div>

@@ -214,7 +214,7 @@ public abstract class Manager extends ServletWithLogging {
 		    		out.print(lastAdded + "#" + totalScarfs + "%");
 		    		int destination = Math.max(Integer.parseInt(refreshFrom),lastAdded - getChatLength());
 			    	for(int i = lastAdded; i > destination; i--)
-			    		out.print("<div class='msg'>" + retrieveMessage(i) + "</div>");
+			    		out.print("<div class='well'>" + retrieveMessage(i) + "</div>");
 			    	
 		    	//}
 		    }else if(id != null && !id.equals("") && len != null && !len.equals("")){
@@ -228,7 +228,7 @@ public abstract class Manager extends ServletWithLogging {
 		    		out.print("1");
 		    	}
 		    	for(int i = start; i >= destination; i--)
-		    		out.print("<div class='msg'>" + retrieveMessage(i) + "</div>");
+		    		out.print("<div class='well'>" + retrieveMessage(i) + "</div>");
 		    }
 		    out.close();
 	  }
